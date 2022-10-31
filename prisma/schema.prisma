@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model App {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  metadata    Json?
+
+  User     User[]
+  Provider Provider[]
+  Event    Event[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([name])
+}
+
+model User {
+  id             String   @id @default(uuid())
+  walletAddress  String   @map("wallet_address")
+  mobile         String?
+  email          String?
+  telegramChatId String?  @map("telegram_chat_id")
+  fcmToken       String[] @map("fcm_token")
+  metadata       Json?
+  app            App      @relation(fields: [appName], references: [name], onDelete: Cascade)
+  appName        String   @map("app_name")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([walletAddress, appName])
+  @@index([walletAddress, appName])
+}
+
+model Event {
+  id       String @id @default(uuid())
+  name     String
+  template String
+  metadata Json?
+
+  provider   Provider? @relation(fields: [providerId], references: [id])
+  providerId String?   @map("provider_id")
+
+  app     App    @relation(fields: [appName], references: [name], onDelete: Cascade)
+  appName String @map("app_name")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([name, appName])
+  @@index([name, appName])
+}
+
+model Provider {
+  id             String      @id @default(uuid())
+  name           String
+  description    String?
+  config         Json
+  channel        Channel
+  providerKey    ProviderKey @map("provider_key")
+  statusCallback String?     @map("status_callback")
+
+  app     App     @relation(fields: [appName], references: [name], onDelete: Cascade)
+  appName String  @map("app_name")
+  event   Event[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([name, appName])
+  @@index([name, appName])
+}
+
+enum Channel {
+  PUSH   @map("push")
+  IN_APP @map("in_app")
+  OTHER  @map("other")
+}
+
+enum ProviderKey {
+  // Push Provider
+  FIREBASE @map("firebase")
+
+  // In App Provider
+  PEGION @map("pegion") // Our native InApp Provider
+
+  // Other Provider
+  TELEGRAM @map("telegram")
+  SLACK    @map("slack")
+}
