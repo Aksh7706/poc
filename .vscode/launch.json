@@ -1,0 +1,17 @@
+{
+  "configurations": [
+    {
+      "name": "Attach",
+      "port": 9229,
+      "request": "attach",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node"
+    },
+    {
+      "type": "pwa-chrome",
+      "name": "ws://127.0.0.1:9229/d5c12db7-e70e-446e-8ec0-2dd8d4101b4c",
+      "request": "launch",
+      "url": "ws://127.0.0.1:9229/d5c12db7-e70e-446e-8ec0-2dd8d4101b4c"
+    }
+  ]
+}

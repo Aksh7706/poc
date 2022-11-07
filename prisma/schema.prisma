@@ -27,15 +27,15 @@ model App {
 }
 
 model User {
-  id             String   @id @default(uuid())
-  walletAddress  String   @map("wallet_address")
-  mobile         String?
-  email          String?
-  telegramChatId String?  @map("telegram_chat_id")
-  fcmToken       String[] @map("fcm_token")
-  metadata       Json?
-  app            App      @relation(fields: [appName], references: [name], onDelete: Cascade)
-  appName        String   @map("app_name")
+  id            String             @id @default(uuid())
+  walletAddress String             @map("wallet_address")
+  mobile        String?
+  email         String?
+  telegramData  TelegramProvider[]
+  fcmToken      String[]           @map("fcm_token")
+  metadata      Json?
+  app           App                @relation(fields: [appName], references: [name], onDelete: Cascade)
+  appName       String             @map("app_name")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -44,37 +44,52 @@ model User {
   @@index([walletAddress, appName])
 }
 
+model TelegramProvider {
+  walletAddress String
+  appName       String
+  providerName  String
+  chatId        String
+  user          User   @relation(fields: [walletAddress, appName], references: [walletAddress, appName], onDelete: Cascade)
+
+  @@unique([walletAddress, appName, providerName])
+}
+
 model Event {
-  id       String @id @default(uuid())
-  name     String
-  template String
-  metadata Json?
-
-  provider   Provider? @relation(fields: [providerId], references: [id])
-  providerId String?   @map("provider_id")
-
-  app     App    @relation(fields: [appName], references: [name], onDelete: Cascade)
-  appName String @map("app_name")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                 String           @id @default(uuid())
+  name               String
+  template           String
+  metadata           Json?
+  connectedProviders EventProviders[]
+  app                App              @relation(fields: [appName], references: [name], onDelete: Cascade)
+  appName            String           @map("app_name")
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
 
   @@unique([name, appName])
   @@index([name, appName])
 }
 
+model EventProviders {
+  appName      String
+  eventName    String
+  provider     Provider @relation(fields: [providerName, appName], references: [name, appName], onDelete: Cascade)
+  Event        Event    @relation(fields: [eventName, appName], references: [name, appName], onDelete: Cascade)
+  providerName String
+
+  @@unique([appName, eventName, providerName])
+}
+
 model Provider {
-  id             String      @id @default(uuid())
+  id             String           @id @default(uuid())
   name           String
   description    String?
-  config         Json
+  config         Json?
   channel        Channel
-  providerKey    ProviderKey @map("provider_key")
-  statusCallback String?     @map("status_callback")
-
-  app     App     @relation(fields: [appName], references: [name], onDelete: Cascade)
-  appName String  @map("app_name")
-  event   Event[]
+  providerKey    ProviderKey      @map("provider_key")
+  statusCallback String?          @map("status_callback")
+  app            App              @relation(fields: [appName], references: [name], onDelete: Cascade)
+  appName        String           @map("app_name")
+  EventProviders EventProviders[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
