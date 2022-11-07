@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { SendEventArgs, SetupProviderArgs } from '../types';
+import { Pigeon } from './inapp/pegion';
 import { Telegram } from './other/telegram';
 
 export class Provider {
@@ -88,7 +89,10 @@ export class Provider {
     // do noting
   }
 
-  private sendInAppEvent(_args: SendEventArgs) {
-    // do nothing
+  private async sendInAppEvent(args: SendEventArgs) {
+    if (args.provider.providerKey === 'PIGEON_WEB') {
+      const pigeonProvider = new Pigeon();
+      await pigeonProvider.sendMessage(args);
+    }
   }
 }

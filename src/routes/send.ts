@@ -6,7 +6,7 @@ import { Provider } from '../providers/provider';
 
 const router = express.Router();
 
-type sendEventArgs = {
+export type sendEventArgs = {
   appName: string;
   eventName: string;
   userWalletAddress: string;
@@ -46,6 +46,7 @@ const sendEvent = async ({ body, params }: Request, res: Response) => {
     const payload: sendEventArgs | undefined = validatePayload({ appName: params.appName, ...body }, sendSchema);
     if (payload === undefined) return;
     await sendEventHelper(payload);
+    res.sendStatus(200);
   } catch (err) {
     return handleError(err, res);
   }

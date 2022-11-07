@@ -5,7 +5,10 @@ import appRoutes from './routes/app';
 import providerRoutes from './routes/provider';
 import eventRoutes from './routes/event';
 import webhookRoutes from './routes/webhook';
-import sendRoutes from './routes/send';
+import sendRoutes, { sendEventArgs, sendEventHelper } from './routes/send';
+import { RabbitMqConnection } from './rabbitmq';
+import { Message } from 'amqplib';
+import { SendEventArgs } from './types';
 
 const app = express();
 const port = 3000;
@@ -34,7 +37,18 @@ setUpParsing(app);
 app.use('/apps', appRoutes, providerRoutes, eventRoutes, sendRoutes);
 app.use(webhookRoutes);
 
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Timezones by location application is running on port ${port}.`);
   console.log(process.env.DATABASE_URL);
+
+  const rabbitMqConnection = new RabbitMqConnection();
+  await rabbitMqConnection.setUp();
+  await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {
+    console.log('listening', msg?.content.toString());
+    if(msg?.content){
+      const sendParams = JSON.parse(msg?.content.toString()) as sendEventArgs;
+      await sendEventHelper(sendParams);
+    }
+    rabbitMqConnection.channel.ack(msg as Message)
+  });
 });

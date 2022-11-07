@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "incremental": true,
-    "target": "ES2021",
+    "target": "es2016",
     "module": "CommonJS",
     "strict": true,
     "noFallthroughCasesInSwitch": true,

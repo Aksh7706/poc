@@ -79,10 +79,10 @@ const getProvider = async ({ params }: Request, res: Response) => {
 };
 
 const deleteProvider = async ({ body, params }: Request, res: Response) => {
-  if (!params.appName || !body.name) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+  if (!params.appName || !body.providerName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
     await appExists(params.appName);
-    const provider = await providerExists(params.appName, body.name);
+    const provider = await providerExists(params.appName, body.providerName);
     const providerApi = new Provider();
 
     await providerApi.removeProvider({

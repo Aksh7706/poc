@@ -1,10 +1,11 @@
-import axios, { AxiosError } from 'axios';
-import { ErrorAPIQuery, ErrorInvalidArg, errorType, SendEventArgs, TelegramResponse } from '../../types';
+import axios from 'axios';
+import { ErrorInvalidArg, SendEventArgs, TelegramResponse } from '../../types';
 
 export class Telegram {
   baseURL = 'https://api.telegram.org';
   serverURL = process.env.SERVER_URL;
 
+  //Send Api Telegram
   //https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}
 
   async sendMessage({ user, provider, event }: SendEventArgs) {
@@ -35,7 +36,7 @@ export class Telegram {
     const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
 
     const { data } = await axios.get(methodEndpoint, { params });
-    console.log(data);
+    //console.log(data);
   }
 
   async setupProvider(app: string, providerName: string, token?: string) {

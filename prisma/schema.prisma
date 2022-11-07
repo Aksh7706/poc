@@ -109,9 +109,18 @@ enum ProviderKey {
   FIREBASE @map("firebase")
 
   // In App Provider
-  PEGION @map("pegion") // Our native InApp Provider
+  PIGEON_WEB    @map("pigeon_web") // Our native InApp Provider for Web Platforms
+  PIGEON_MOBILE @map("pigeon_mobile") // Our native InApp Provider for Mobile Platforms
 
   // Other Provider
   TELEGRAM @map("telegram")
   SLACK    @map("slack")
+}
+
+model InAppWebNotifications {
+  id               String  @id @default(uuid())
+  appName          String
+  userWalletAdress String  @map("user_wallet_address")
+  message          String
+  isRead           Boolean
 }

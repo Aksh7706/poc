@@ -43,7 +43,7 @@ const createEvent = async ({ params, body }: Request, res: Response) => {
     await checkUniqueEvent(payload.appName, payload.eventName);
 
     const event = await db.event.create(payload.appName, {
-      name: payload.appName,
+      name: payload.eventName,
       template: payload.template,
       metadata: payload.metadata,
     });
