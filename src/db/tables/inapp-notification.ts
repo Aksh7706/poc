@@ -34,10 +34,10 @@ export class InAppNotificationDB {
     return notification;
   }
 
-  async updateStatus(notificationId: string, isRead: boolean) {
+  async updateStatus(requestId: string, isRead: boolean) {
     const notification = await this.prisma.inAppWebNotifications.update({
       where: {
-        id: notificationId,
+        requestId: requestId,
       },
       data: {
         isRead: isRead,
@@ -46,10 +46,10 @@ export class InAppNotificationDB {
     return notification;
   }
 
-  async delete(notificationId: string) {
+  async delete(requestId: string) {
     await this.prisma.inAppWebNotifications.delete({
       where: {
-        id: notificationId,
+        requestId: requestId,
       },
     });
   }

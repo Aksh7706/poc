@@ -13,6 +13,7 @@
     "noUnusedParameters": false,
     "allowUnreachableCode": false,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["./types"]
   }
 }

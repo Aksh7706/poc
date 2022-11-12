@@ -42,20 +42,20 @@ export class Provider {
     }
   }
 
-  private async setupOtherProvider({ app, config, provider, providerName }: SetupProviderArgs) {
+  private async setupOtherProvider({ appId, config, provider, providerName }: SetupProviderArgs) {
     if (provider === 'TELEGRAM') {
       const telegramProvider = new Telegram();
-      await telegramProvider.setupProvider(app, providerName, config.telegramBotToken);
+      await telegramProvider.setupProvider(appId, providerName, config.telegramBotToken);
     }
   }
 
-  private async removeOtherProvider({ app, config, provider, providerName }: SetupProviderArgs) {
+  private async removeOtherProvider({ appId, config, provider, providerName }: SetupProviderArgs) {
     if (provider === 'TELEGRAM') {
       const telegramProvider = new Telegram();
       await telegramProvider.removeProvider(config.telegramBotToken);
       await this.prisma.telegramProvider.deleteMany({
         where: {
-          appName: app,
+          appId: appId,
           providerName: providerName,
         },
       });

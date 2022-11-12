@@ -8,22 +8,22 @@ export class ProviderDB {
     this.prisma = prisma;
   }
 
-  async getAll(appName: string, channel?: Channel, providerType?: ProviderKey): Promise<Provider[]> {
+  async getAll(appId: string, channel?: Channel, providerType?: ProviderKey): Promise<Provider[]> {
     return this.prisma.provider.findMany({
       where: {
-        appName: appName,
+        appId: appId,
         channel: channel,
         providerKey: providerType,
       },
     });
   }
 
-  async get(appName: string, providerName: string): Promise<Provider | null> {
+  async get(appId: string, providerName: string): Promise<Provider | null> {
     const provider = await this.prisma.provider.findUnique({
       where: {
-        name_appName: {
+        name_appId: {
           name: providerName,
-          appName: appName,
+          appId: appId,
         },
       },
     });
@@ -31,10 +31,10 @@ export class ProviderDB {
     return provider;
   }
 
-  async create(appName: string, args: createProviderArgs): Promise<Provider> {
+  async create(appId: string, args: createProviderArgs): Promise<Provider> {
     const provider = await this.prisma.provider.create({
       data: {
-        appName: appName,
+        appId: appId,
         ...args,
       },
     });
@@ -42,18 +42,18 @@ export class ProviderDB {
     return provider;
   }
 
-  async update(appName: string, providerName: string, args: updateProviderArgs): Promise<Provider> {
+  async update(appId: string, providerName: string, args: updateProviderArgs): Promise<Provider> {
     const provider = await this.prisma.provider.upsert({
       where: {
-        name_appName: {
+        name_appId: {
           name: providerName,
-          appName: appName,
+          appId: appId,
         },
       },
       update: { ...args },
       create: {
         name: providerName,
-        appName: appName,
+        appId: appId,
         ...args,
       },
     });
@@ -61,19 +61,19 @@ export class ProviderDB {
     return provider;
   }
 
-  async delete(appName: string, providerName: string): Promise<void> {
+  async delete(appId: string, providerName: string): Promise<void> {
     await this.prisma.provider.deleteMany({
       where: {
         name: providerName,
-        appName: appName,
+        appId: appId,
       },
     });
   }
 
-  async getConnectedEvents(appName: string, providerName: string) {
+  async getConnectedEvents(appId: string, providerName: string) {
     const events = await this.prisma.eventProviders.findMany({
       where: {
-        appName: appName,
+        appId: appId,
         providerName: providerName,
       },
       include: {

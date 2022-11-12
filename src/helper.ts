@@ -4,20 +4,20 @@ import { ErrorAPIQuery, ErrorGeneric, ErrorInvalidArg, errorType } from './types
 import { Response } from 'express';
 import { AxiosError } from 'axios';
 
-export const appExists = async (appName: string) => {
-  const app = await db.app.get(appName);
+export const appExists = async (appName: string, ownerAddress: string) => {
+  const app = await db.app.get(appName, ownerAddress);
   if (!app) throw new ErrorInvalidArg('App does not exist');
   return app;
 };
 
-export const providerExists = async (appName: string, providerName: string) => {
-  const provider = await db.provider.get(appName, providerName);
+export const providerExists = async (appId: string, providerName: string) => {
+  const provider = await db.provider.get(appId, providerName);
   if (!provider) throw new ErrorInvalidArg('Provider does not exist');
   return provider;
 };
 
-export const eventExists = async (appName: string, eventName: string) => {
-  const event = await db.event.get(appName, eventName);
+export const eventExists = async (appId: string, eventName: string) => {
+  const event = await db.event.get(appId, eventName);
   if (!event) throw new ErrorInvalidArg('Event does not exist');
   return event;
 };
@@ -28,15 +28,15 @@ export const userExists = async (appName: string, walletAddress: string) => {
   return user;
 };
 
-export const checkUniqueProvider = async (appName: string, providerName: string) => {
-  const provider = await db.provider.get(appName, providerName);
+export const checkUniqueProvider = async (appId: string, providerName: string) => {
+  const provider = await db.provider.get(appId, providerName);
   if (provider !== null) {
     throw new ErrorInvalidArg('Provider name not unique');
   }
 };
 
-export const checkUniqueEvent = async (appName: string, eventName: string) => {
-  const event = await db.event.get(appName, eventName);
+export const checkUniqueEvent = async (appId: string, eventName: string) => {
+  const event = await db.event.get(appId, eventName);
   if (event !== null) {
     throw new ErrorInvalidArg('Event name not unique');
   }

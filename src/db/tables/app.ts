@@ -8,16 +8,19 @@ export class AppDB {
     this.prisma = prisma;
   }
 
-  async getAll(): Promise<AppData[]> {
+  async getAll(ownerAddress: string): Promise<AppData[]> {
     return this.prisma.app.findMany({
+      where: {
+        ownerAddress: ownerAddress,
+      },
       include: this.includeRelations(),
     });
   }
 
-  async get(appName: string): Promise<AppData | null> {
+  async getById(appId: string): Promise<AppData | null> {
     const app = await this.prisma.app.findUnique({
       where: {
-        name: appName,
+        id: appId,
       },
       include: this.includeRelations(),
     });
@@ -25,12 +28,27 @@ export class AppDB {
     return app;
   }
 
-  async create({ name, description, metadata }: createAppArgs): Promise<AppData> {
+  async get(appName: string, ownerAddress: string): Promise<AppData | null> {
+    const app = await this.prisma.app.findUnique({
+      where: {
+        name_ownerAddress: {
+          name: appName,
+          ownerAddress: ownerAddress,
+        },
+      },
+      include: this.includeRelations(),
+    });
+
+    return app;
+  }
+
+  async create({ name, description, metadata, ownerAddress }: createAppArgs): Promise<AppData> {
     const app = await this.prisma.app.create({
       data: {
         name: name,
         description: description,
         metadata: metadata,
+        ownerAddress: ownerAddress,
       },
       include: this.includeRelations(),
     });
@@ -38,19 +56,28 @@ export class AppDB {
     return app;
   }
 
-  async update(appName: string, { description, metadata }: updateAppArgs): Promise<AppData> {
+  async update(
+    appName: string,
+    ownerAddress: string,
+    { description, metadata, name }: updateAppArgs,
+  ): Promise<AppData> {
     const app = await this.prisma.app.upsert({
       where: {
-        name: appName,
+        name_ownerAddress: {
+          name: appName,
+          ownerAddress: ownerAddress,
+        },
       },
       update: {
+        name: name,
         description: description,
         metadata: metadata,
       },
       create: {
-        name: appName,
+        name: name,
         description: description,
         metadata: metadata,
+        ownerAddress: ownerAddress,
       },
       include: this.includeRelations(),
     });
@@ -58,9 +85,10 @@ export class AppDB {
     return app;
   }
 
-  async delete(appName: string): Promise<void> {
+  async delete(appName: string, ownerAddress: string): Promise<void> {
     await this.prisma.app.deleteMany({
       where: {
+        ownerAddress: ownerAddress,
         name: appName,
       },
     });

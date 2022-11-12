@@ -2,14 +2,14 @@ import express, { Request, Response } from 'express';
 import { db } from '../db/db';
 const router = express.Router();
 
-router.post('/webhook/:appName/:providerName', async ({ params, body }: Request, res: Response) => {
-  const appName = params.appName;
+router.post('/webhook/:appId/:providerName', async ({ params, body }: Request, res: Response) => {
+  const appId = params.appId;
   const providerName = params.providerName;
 
-  if (!appName || !providerName) return res.sendStatus(200);
+  if (!appId || !providerName) return res.sendStatus(200);
 
-  const app = await db.app.get(appName);
-  const provider = await db.provider.get(appName, providerName);
+  const app = await db.app.getById(appId);
+  const provider = await db.provider.get(appId, providerName);
 
   if (!app || !provider) return res.sendStatus(200); // if app or provider does not exist
   if(provider.providerKey !== 'TELEGRAM') return res.sendStatus(200); // TODO: Make hook more generalized
@@ -22,9 +22,9 @@ router.post('/webhook/:appName/:providerName', async ({ params, body }: Request,
     const walletAddress = msgArray[1]; // TODO: add method to validate isWalletAddress
     if(!walletAddress) return res.sendStatus(200);
 
-    let user = await db.user.get(appName, walletAddress);
+    let user = await db.user.get(appId, walletAddress);
     if(!user){
-      user = await db.user.create(appName, {
+      user = await db.user.create(appId, {
         walletAddress: walletAddress,
         telegramData: {
           create: {
@@ -34,7 +34,7 @@ router.post('/webhook/:appName/:providerName', async ({ params, body }: Request,
         }
       })
     }else{
-      user = await db.user.updateTelegramChatId(appName, walletAddress, providerName, chatId.toString());
+      user = await db.user.updateTelegramChatId(appId, walletAddress, providerName, chatId.toString());
     }
     console.log("User : ", user)
   }

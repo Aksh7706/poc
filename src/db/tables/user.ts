@@ -8,10 +8,10 @@ export class UserDB {
     this.prisma = prisma;
   }
 
-  async getAll(appName: string) {
+  async getAll(appId: string) {
     return this.prisma.user.findMany({
       where: {
-        appName: appName,
+        appId: appId,
       },
       include: {
         telegramData: true,
@@ -19,11 +19,11 @@ export class UserDB {
     });
   }
 
-  async get(appName: string, walletAddress: string) {
+  async get(appId: string, walletAddress: string) {
     const user = await this.prisma.user.findUnique({
       where: {
-        walletAddress_appName: {
-          appName: appName,
+        walletAddress_appId: {
+          appId: appId,
           walletAddress: walletAddress,
         },
       },
@@ -34,9 +34,9 @@ export class UserDB {
     return user;
   }
 
-  async create(appName: string, args: createUserArgs) {
+  async create(appId: string, args: createUserArgs) {
     const user = await this.prisma.user.create({
-      data: { appName: appName, ...args },
+      data: { appId: appId, ...args },
       include: {
         telegramData: true,
       },
@@ -45,17 +45,17 @@ export class UserDB {
     return user;
   }
 
-  async update(appName: string, walletAddress: string, args: updateUserArgs) {
+  async update(appId: string, walletAddress: string, args: updateUserArgs) {
     const user = await this.prisma.user.upsert({
       where: {
-        walletAddress_appName: {
-          appName: appName,
+        walletAddress_appId: {
+          appId: appId,
           walletAddress: walletAddress,
         },
       },
       update: { ...args },
       create: {
-        appName: appName,
+        appId: appId,
         walletAddress: walletAddress,
         ...args,
       },
@@ -66,17 +66,17 @@ export class UserDB {
     return user;
   }
 
-  async delete(appName: string, walletAddress: string): Promise<void> {
+  async delete(appId: string, walletAddress: string): Promise<void> {
     await this.prisma.user.deleteMany({
       where: {
-        appName: appName,
+        appId: appId,
         walletAddress: walletAddress,
       },
     });
   }
 
   async addTelegramChatId(
-    appName: string,
+    appId: string,
     walletAddress: string,
     data: {
       providerName: string;
@@ -85,7 +85,7 @@ export class UserDB {
   ) {
     const dataProcessed = data.map((t) => {
       return {
-        appName: appName,
+        appId: appId,
         walletAddress: walletAddress,
         providerName: t.providerName,
         chatId: t.chatId,
@@ -97,14 +97,14 @@ export class UserDB {
       skipDuplicates: true,
     });
 
-    return this.get(appName, walletAddress);
+    return this.get(appId, walletAddress);
   }
 
-  async updateTelegramChatId(appName: string, walletAddress: string, providerName: string, chatId: string) {
+  async updateTelegramChatId(appId: string, walletAddress: string, providerName: string, chatId: string) {
     await this.prisma.telegramProvider.upsert({
       where: {
-        walletAddress_appName_providerName: {
-          appName: appName,
+        walletAddress_appId_providerName: {
+          appId: appId,
           providerName: providerName,
           walletAddress: walletAddress,
         },
@@ -113,25 +113,25 @@ export class UserDB {
         chatId: chatId,
       },
       create: {
-        appName: appName,
+        appId: appId,
         providerName: providerName,
         chatId: chatId,
         walletAddress: walletAddress,
       },
     });
 
-    return this.get(appName, walletAddress);
+    return this.get(appId, walletAddress);
   }
 
-  async deleteTelegramChatId(appName: string, walletAddress: string, providerName: string) {
+  async deleteTelegramChatId(appId: string, walletAddress: string, providerName: string) {
     await this.prisma.telegramProvider.deleteMany({
       where: {
-        appName: appName,
+        appId: appId,
         walletAddress: walletAddress,
         providerName: providerName,
       },
     });
 
-    return this.get(appName, walletAddress);
+    return this.get(appId, walletAddress);
   }
 }

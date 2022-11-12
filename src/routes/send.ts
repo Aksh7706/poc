@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import Handlebars from 'handlebars';
 import Joi from 'joi';
 import { db } from '../db/db';
 import { appExists, eventExists, handleError, userExists, validatePayload } from '../helper';
@@ -20,12 +21,15 @@ const sendSchema = Joi.object({
   data: Joi.object().optional(),
 });
 
-export const sendEventHelper = async ({ appName, eventName, userWalletAddress }: sendEventArgs) => {
+export const sendEventHelper = async ({ appName, eventName, userWalletAddress, data }: sendEventArgs) => {
   const providerAPI = new Provider();
 
   const app = await appExists(appName);
   const event = await eventExists(appName, eventName);
   const user = await userExists(appName, userWalletAddress);
+
+  const template = Handlebars.compile(event.template);
+  const message = template(data)
 
   await Promise.all(
     event.connectedProviders.map(async (eventProvider) => {
@@ -36,6 +40,7 @@ export const sendEventHelper = async ({ appName, eventName, userWalletAddress }:
         event: event,
         provider: provider,
         user: user,
+        message: message
       });
     }),
   );

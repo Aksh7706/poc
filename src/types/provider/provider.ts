@@ -2,7 +2,7 @@ import { App, Channel, ProviderKey, User, TelegramProvider, Event, Provider } fr
 
 
 export type SetupProviderArgs = {
-  app: string;
+  appId: string;
   providerName: string;
   provider: ProviderKey;
   channel: Channel;
@@ -14,4 +14,5 @@ export type SendEventArgs = {
   user: User & {telegramData: TelegramProvider[]}
   provider: Provider;
   event: Event;
+  message: string;
 };
