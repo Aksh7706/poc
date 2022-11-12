@@ -2,12 +2,12 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import accountRoutes from './routes/account';
-// import appRoutes from './routes/app';
-// import providerRoutes from './routes/provider';
-// import eventRoutes from './routes/event';
-// import webhookRoutes from './routes/webhook';
+import appRoutes from './routes/app';
+import providerRoutes from './routes/provider';
+import eventRoutes from './routes/event';
+import webhookRoutes from './routes/webhook';
 import authRoutes from './routes/auth';
-// import sendRoutes, { sendEventArgs, sendEventHelper } from './routes/send';
+import sendRoutes, { sendEventArgs, sendEventHelper } from './routes/send';
 import { RabbitMqConnection } from './rabbitmq';
 import { Message } from 'amqplib';
 import cookieParser from 'cookie-parser';
@@ -40,21 +40,21 @@ setUpParsing(app);
 
 app.use('/account', accountRoutes);
 app.use('/auth', authRoutes);
-// app.use('/apps', appRoutes, providerRoutes, eventRoutes, sendRoutes);
-// app.use(webhookRoutes);
+app.use('/apps', appRoutes, providerRoutes, eventRoutes, sendRoutes);
+app.use(webhookRoutes);
 
 app.listen(port, async () => {
   console.log(`Timezones by location application is running on port ${port}.`);
   console.log(process.env.DATABASE_URL);
 
-  // const rabbitMqConnection = new RabbitMqConnection();
-  // await rabbitMqConnection.setUp();
-  // await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {
-  //   console.log('listening', msg?.content.toString());
-  //   if (msg?.content) {
-  //     const sendParams = JSON.parse(msg?.content.toString()) as sendEventArgs;
-  //     await sendEventHelper(sendParams);
-  //   }
-  //   rabbitMqConnection.channel.ack(msg as Message);
-  // });
+  const rabbitMqConnection = new RabbitMqConnection();
+  await rabbitMqConnection.setUp();
+  await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {
+    console.log('listening', msg?.content.toString());
+    if (msg?.content) {
+      const sendParams = JSON.parse(msg?.content.toString()) as sendEventArgs;
+      await sendEventHelper(sendParams);
+    }
+    rabbitMqConnection.channel.ack(msg as Message);
+  });
 });
