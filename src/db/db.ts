@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { AccountDB, AppDB, EventDB, InAppNotificationDB, ProviderDB, UserDB } from './tables';
+import { LogDB } from './tables/log';
 
 class DB {
   app: AppDB;
@@ -8,6 +9,7 @@ class DB {
   provider: ProviderDB;
   inAppNotification: InAppNotificationDB;
   account: AccountDB;
+  log: LogDB;
 
   constructor(prisma: PrismaClient) {
     this.account = new AccountDB(prisma);
@@ -16,6 +18,7 @@ class DB {
     this.event = new EventDB(prisma);
     this.provider = new ProviderDB(prisma);
     this.inAppNotification = new InAppNotificationDB(prisma);
+    this.log = new LogDB(prisma);
   }
 }
 

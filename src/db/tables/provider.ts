@@ -15,6 +15,9 @@ export class ProviderDB {
         channel: channel,
         providerKey: providerType,
       },
+      include: {
+        EventProviders: true,
+      },
     });
   }
 
@@ -26,6 +29,9 @@ export class ProviderDB {
           appId: appId,
         },
       },
+      include: {
+        EventProviders: true,
+      },
     });
 
     return provider;
@@ -36,6 +42,9 @@ export class ProviderDB {
       data: {
         appId: appId,
         ...args,
+      },
+      include: {
+        EventProviders: true,
       },
     });
 
@@ -55,6 +64,9 @@ export class ProviderDB {
         name: providerName,
         appId: appId,
         ...args,
+      },
+      include: {
+        EventProviders: true,
       },
     });
 

@@ -30,6 +30,16 @@ export class AccountDB {
     return app;
   }
 
+  async getByApiKey(apiKey: string) {
+    const app = await this.prisma.account.findUnique({
+      where: {
+        apiKey: apiKey,
+      },
+    });
+
+    return app;
+  }
+
   async create({ ownerAddress, name }: createAccountArgs) {
     const account = await this.prisma.account.create({
       data: {

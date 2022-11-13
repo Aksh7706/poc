@@ -2,9 +2,10 @@ import express, { Request, Response } from 'express';
 import Handlebars from 'handlebars';
 import Joi from 'joi';
 import { db } from '../db/db';
-import { appExists, eventExists, handleError, userExists, validatePayload } from '../helper';
+import { appExists, eventExists, handleError, logEvent, userExists, validatePayload } from '../helper';
 import { authValidation } from '../middleware/authValidation';
 import { Provider } from '../providers/provider';
+import { ErrorGeneric } from '../types';
 
 const router = express.Router();
 
@@ -33,28 +34,58 @@ export const sendEventHelper = async ({ appName, eventName, userWalletAddress, d
 
   const template = Handlebars.compile(event.template);
   const message = template(data);
+  let failedNotifications = 0;
 
   await Promise.all(
     event.connectedProviders.map(async (eventProvider) => {
       const provider = await db.provider.get(app.id, eventProvider.providerName);
       if (!provider) return;
-      await providerAPI.send({
-        app: app,
-        event: event,
-        provider: provider,
-        user: user,
-        message: message,
-      });
+      try {
+        await providerAPI.send({
+          app: app,
+          event: event,
+          provider: provider,
+          user: user,
+          message: message,
+        });
+        await logEvent({ app: app, event: event, message: message, provider: provider, user: user }, 'DELIVERED');
+      } catch (e) {
+        failedNotifications += 1;
+        await logEvent({ app: app, event: event, message: message, provider: provider, user: user }, 'FAILED');
+      }
     }),
   );
+
+  if (failedNotifications !== 0)
+    throw new ErrorGeneric({ reason: 'FAILURE', explanation: `${failedNotifications} notifications failed to send.` });
 };
 
-const sendEvent = async ({ body, params, ownerAddress }: Request, res: Response) => {
+export const sendEventFromApiKey = async (args: any) => {
   try {
+    if (!args?.apiKey) return; // No Api key
+    const account = await db.account.getByApiKey(args.apiKey);
+    if (!account) return; // Account does not exist
+
     const payload: sendEventArgs | undefined = validatePayload(
-      { appName: params.appName, ownerAddress: ownerAddress, ...body },
+      {
+        appName: args?.appName,
+        eventName: args?.eventName,
+        userWalletAddress: args?.userWalletAddress,
+        data: args?.data,
+        ownerAddress: account.ownerAddress,
+      },
       sendSchema,
     );
+    if (payload === undefined) return;
+    await sendEventHelper(payload);
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+const sendEventFromDashboard = async ({ body, ownerAddress }: Request, res: Response) => {
+  try {
+    const payload: sendEventArgs | undefined = validatePayload({ ownerAddress: ownerAddress, ...body }, sendSchema);
     if (payload === undefined) return;
     await sendEventHelper(payload);
     res.sendStatus(200);
@@ -63,6 +94,6 @@ const sendEvent = async ({ body, params, ownerAddress }: Request, res: Response)
   }
 };
 
-router.post('/send/:appName', authValidation, sendEvent);
+router.post('/dashboard', authValidation, sendEventFromDashboard);
 
 export default router;

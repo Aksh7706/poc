@@ -8,23 +8,24 @@ export class InAppNotificationDB {
     this.prisma = prisma;
   }
 
-  async getAll(appName: string) {
+  async getAll(appId: string, userWalletAddress: string) {
     const notifications = await this.prisma.inAppWebNotifications.findMany({
       where: {
-        appName: appName,
+        appId: appId,
+        userWalletAdress: userWalletAddress
       },
     });
     return notifications;
   }
 
-  async get(appName: string, userWalletAddress: string) {
-    const notifications = await this.prisma.inAppWebNotifications.findMany({
+  async get(requestId: string) {
+    const notification = await this.prisma.inAppWebNotifications.findUnique({
       where: {
-        appName: appName,
-        userWalletAdress: userWalletAddress,
+        requestId: requestId,
       },
     });
-    return notifications;
+
+    return notification;
   }
 
   async create(args: createInappNotificationArgs) {

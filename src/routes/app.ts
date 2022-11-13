@@ -22,11 +22,11 @@ const createApp = async (req: Request, res: Response) => {
   return res.status(200).send(app);
 };
 
-const getApp = async (req: Request, res: Response) => {
-  if (!req.params.appName)
+const getApp = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName)
     return res.status(400).json({ reason: 'INVALID_PAYLOAD', explanation: 'name can not be undefined' });
 
-  const app = await db.app.get(req.params.appName, req.ownerAddress!);
+  const app = await db.app.get(body.appName, ownerAddress!);
   return res.status(200).send(app);
 };
 
@@ -39,7 +39,7 @@ const deleteApp = async (req: Request, res: Response) => {
 };
 
 router.get('/all', authValidation, getAllApps);
-router.get('/:appName', authValidation, getApp);
+router.post('/get', authValidation, getApp);
 router.post('/create', authValidation, createApp);
 router.post('/delete', authValidation, deleteApp);
 

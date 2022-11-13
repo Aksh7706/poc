@@ -2,9 +2,10 @@ import { db } from '../../db/db';
 import { SendEventArgs } from '../../types';
 
 export class Pigeon {
-  async sendMessage({ user, app, event, message }: SendEventArgs) {
+  async sendMessage(args: SendEventArgs) {
+    const { user, app, message } = args;
     await db.inAppNotification.create({
-      appName: app.name,
+      appId: app.id,
       isRead: false,
       message: message,
       userWalletAdress: user.walletAddress,

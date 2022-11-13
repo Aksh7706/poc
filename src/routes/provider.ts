@@ -3,13 +3,12 @@ import express, { Request, Response } from 'express';
 import { db } from '../db/db';
 import { Provider } from '../providers/provider';
 import Joi from 'joi';
-import { appExists, checkUniqueProvider, handleError, providerExists } from '../helper';
-import { ErrorGeneric } from '../types';
+import { appExists, checkUniqueProvider, handleError, providerExists, validatePayload } from '../helper';
 import { authValidation } from '../middleware/authValidation';
 
 const router = express.Router();
 
-const schema = Joi.object({
+const createSchema = Joi.object({
   appName: Joi.string().required(),
   providerName: Joi.string().required(),
   channel: Joi.string()
@@ -22,7 +21,7 @@ const schema = Joi.object({
   description: Joi.object().optional(),
 });
 
-type PostRequestBody = {
+type CreateRequestBody = {
   readonly appName: string;
   readonly providerName: string;
   readonly channel: Channel;
@@ -31,15 +30,9 @@ type PostRequestBody = {
   readonly description?: string;
 };
 
-function validatePayload(body: any, appName?: string): PostRequestBody | undefined {
-  const { value, error, warning } = schema.validate({ appName: appName, ...body });
-  if (error === undefined && warning === undefined) return value;
-  throw new ErrorGeneric({ reason: 'INVALID_PAYLOAD', explanation: error ?? warning });
-}
-
-const createProvider = async ({ params, body, ownerAddress }: Request, res: Response) => {
+const createProvider = async ({ body, ownerAddress }: Request, res: Response) => {
   try {
-    const payload = validatePayload(body, params.appName);
+    const payload: CreateRequestBody = validatePayload(body, createSchema);
     if (payload === undefined) return;
     // app exists
     const app = await appExists(payload.appName, ownerAddress!);
@@ -68,21 +61,32 @@ const createProvider = async ({ params, body, ownerAddress }: Request, res: Resp
   }
 };
 
-const getProvider = async ({ params, ownerAddress }: Request, res: Response) => {
-  if (!params.appName || !params.providerName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+const getAllProviders = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
-    const app = await appExists(params.appName, ownerAddress!);
-    const provider = await db.provider.get(app.id, params.providerName);
+    const app = await appExists(body.appName, ownerAddress!);
+    const providers = await db.provider.getAll(app.id);
+    return res.status(200).send(providers);
+  } catch (err) {
+    return handleError(err, res);
+  }
+};
+
+const getProvider = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName || !body.providerName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+  try {
+    const app = await appExists(body.appName, ownerAddress!);
+    const provider = await db.provider.get(app.id, body.providerName);
     return res.status(200).send(provider);
   } catch (err) {
     return handleError(err, res);
   }
 };
 
-const deleteProvider = async ({ body, params, ownerAddress }: Request, res: Response) => {
-  if (!params.appName || !body.providerName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+const deleteProvider = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName || !body.providerName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
-    const app = await appExists(params.appName, ownerAddress!);
+    const app = await appExists(body.appName, ownerAddress!);
     const provider = await providerExists(app.id, body.providerName);
     const providerApi = new Provider();
 
@@ -101,8 +105,22 @@ const deleteProvider = async ({ body, params, ownerAddress }: Request, res: Resp
   }
 };
 
-router.get('/:appName/providers/:providerName', authValidation, getProvider);
-router.post('/:appName/providers/create', authValidation, createProvider);
-router.post('/:appName/providers/delete', authValidation, deleteProvider);
+const getConnectedEvents = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName || !body.providerName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+  try {
+    const app = await appExists(body.appName, ownerAddress!);
+    const provider = await providerExists(app.id, body.providerName);
+    const data = await db.provider.getConnectedEvents(app.id, provider.name);
+    return res.status(200).send(data);
+  } catch (err) {
+    return handleError(err, res);
+  }
+};
+
+router.post('/get', authValidation, getProvider);
+router.post('/getAll', authValidation, getAllProviders);
+router.post('/create', authValidation, createProvider);
+router.post('/delete', authValidation, deleteProvider);
+router.post('/getConnectedEvents', authValidation, getConnectedEvents);
 
 export default router;

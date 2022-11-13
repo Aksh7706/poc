@@ -1,5 +1,5 @@
 export type createInappNotificationArgs = {
-  appName: string;
+  appId: string;
   userWalletAdress: string;
   message: string;
   isRead: boolean;

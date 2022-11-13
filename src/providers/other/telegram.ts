@@ -39,9 +39,9 @@ export class Telegram {
     //console.log(data);
   }
 
-  async setupProvider(app: string, providerName: string, token?: string) {
+  async setupProvider(appId: string, providerName: string, token?: string) {
     if (!token) throw new ErrorInvalidArg('Bot Access Token Invalid');
-    await this.addWebhook(app, providerName, token);
+    await this.addWebhook(appId, providerName, token);
   }
 
   async removeProvider(token?: string) {
@@ -49,8 +49,8 @@ export class Telegram {
     await this.deleteWebhook(token);
   }
 
-  async addWebhook(app: string, providerName: string, token: string) {
-    const params = { url: `${this.serverURL}/webhook/${app}/${providerName}` };
+  async addWebhook(appId: string, providerName: string, token: string) {
+    const params = { url: `${this.serverURL}/webhook/${appId}/${providerName}` };
     const methodEndpoint = `${this.baseURL}/bot${token}/setWebhook`;
     const { data } = await axios.get<TelegramResponse>(methodEndpoint, { params });
     if (!data.ok) throw new ErrorInvalidArg(data.description);

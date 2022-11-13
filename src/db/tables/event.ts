@@ -13,6 +13,9 @@ export class EventDB {
       where: {
         appId: appId,
       },
+      include: {
+        connectedProviders: true,
+      },
     });
   }
 

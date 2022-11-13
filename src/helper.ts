@@ -1,8 +1,11 @@
 import Joi from 'joi';
 import { db } from './db/db';
-import { ErrorAPIQuery, ErrorGeneric, ErrorInvalidArg, errorType } from './types';
+import { ErrorAPIQuery, ErrorGeneric, ErrorInvalidArg, errorType, SendEventArgs } from './types';
 import { Response } from 'express';
 import { AxiosError } from 'axios';
+import { sendEventArgs } from './routes/send';
+import { Message } from 'amqplib';
+import { MessageStatus } from '@prisma/client';
 
 export const appExists = async (appName: string, ownerAddress: string) => {
   const app = await db.app.get(appName, ownerAddress);
@@ -60,3 +63,18 @@ export const handleError = (err: any, res: Response) => {
     res.status(400).send(errorType.ErrorGeneric);
   }
 };
+
+
+export const logEvent = async ({app,event, message,provider,user } : SendEventArgs, status: MessageStatus )=> {
+  await db.log.create({
+    appName: app.name,
+    eventName: event.name,
+    providerName: provider.name,
+    ownerAddress: app.ownerAddress,
+    channel: provider.channel,
+    providerType: provider.providerKey,
+    userWalletAdress: user.walletAddress,
+    message: message,
+    status: status,
+  })
+} 

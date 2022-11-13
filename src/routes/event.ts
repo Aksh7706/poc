@@ -36,10 +36,10 @@ type ConnectEventRequestBody = {
   readonly providerName: string;
 };
 
-const createEvent = async ({ params, body, ownerAddress }: Request, res: Response) => {
+const createEvent = async ({ body, ownerAddress }: Request, res: Response) => {
   try {
     const payload: CreateEventRequestBody | undefined = validatePayload(
-      { appName: params.appName, ...body, ownerAddress: ownerAddress },
+      { ...body, ownerAddress: ownerAddress },
       createSchema,
     );
     if (payload === undefined) return;
@@ -59,21 +59,21 @@ const createEvent = async ({ params, body, ownerAddress }: Request, res: Respons
   }
 };
 
-const getEvent = async ({ params, ownerAddress }: Request, res: Response) => {
-  if (!params.appName || !params.eventName || !ownerAddress) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+const getEvent = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName || !body.eventName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
-  const app = await appExists(params.appName, ownerAddress);
-    const event = await db.event.get(app.id, params.eventName);
+    const app = await appExists(body.appName, ownerAddress!);
+    const event = await db.event.get(app.id, body.eventName);
     return res.status(200).send(event);
   } catch (err) {
     return handleError(err, res);
   }
 };
 
-const deleteEvent = async ({ body, params, ownerAddress }: Request, res: Response) => {
-  if (!params.appName || !body.eventName || !ownerAddress) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+const deleteEvent = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName || !body.eventName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
-    const app = await appExists(params.appName, ownerAddress);
+    const app = await appExists(body.appName, ownerAddress!);
     await eventExists(app.id, body.eventName);
     await db.event.delete(app.id, body.eventName);
     return res.sendStatus(200);
@@ -82,10 +82,10 @@ const deleteEvent = async ({ body, params, ownerAddress }: Request, res: Respons
   }
 };
 
-const connectProvider = async ({ body, params, ownerAddress }: Request, res: Response) => {
+const connectProvider = async ({ body, ownerAddress }: Request, res: Response) => {
   try {
     const payload: ConnectEventRequestBody | undefined = validatePayload(
-      { appName: params.appName, eventName: params.eventName, ...body, ownerAddress: ownerAddress },
+      { ...body, ownerAddress: ownerAddress },
       connectSchema,
     );
     if (payload === undefined) return;
@@ -100,10 +100,10 @@ const connectProvider = async ({ body, params, ownerAddress }: Request, res: Res
   }
 };
 
-const disconnectProvider = async ({ body, params, ownerAddress }: Request, res: Response) => {
+const disconnectProvider = async ({ body, ownerAddress }: Request, res: Response) => {
   try {
     const payload: ConnectEventRequestBody | undefined = validatePayload(
-      { appName: params.appName, eventName: params.eventName, ...body, ownerAddress: ownerAddress },
+      { ...body, ownerAddress: ownerAddress },
       connectSchema,
     );
     if (payload === undefined) return;
@@ -118,11 +118,24 @@ const disconnectProvider = async ({ body, params, ownerAddress }: Request, res: 
   }
 };
 
-router.get('/:appName/events/:eventName', authValidation, getEvent);
-router.post('/:appName/events/create', authValidation, createEvent);
-router.post('/:appName/events/delete', authValidation, deleteEvent);
+const getConnectedProviders = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName || !body.eventName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+  try {
+    const app = await appExists(body.appName, ownerAddress!);
+    await eventExists(app.id, body.eventName);
+    const data = await db.event.getConnectedProviders(app.id, body.eventName);
+    return res.status(200).send(data);
+  } catch (err) {
+    return handleError(err, res);
+  }
+};
 
-router.post('/:appName/events/:eventName/connect', authValidation, connectProvider);
-router.post('/:appName/events/:eventName/disconnect', authValidation, disconnectProvider);
+router.post('/get', authValidation, getEvent);
+router.post('/create', authValidation, createEvent);
+router.post('/delete', authValidation, deleteEvent);
+
+router.post('/connect', authValidation, connectProvider);
+router.post('/disconnect', authValidation, disconnectProvider);
+router.post('/getConnectedProviders', authValidation, getConnectedProviders);
 
 export default router;
