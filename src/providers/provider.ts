@@ -33,8 +33,8 @@ export class Provider {
   async send(args: SendEventArgs) {
     // add cases here
     switch (args.provider.channel) {
-      case 'PUSH':
-        return this.sendPushEvent(args);
+      case 'MAIL':
+        return this.sendMailEvent(args);
       case 'IN_APP':
         return this.sendInAppEvent(args);
       case 'OTHER':
@@ -85,12 +85,14 @@ export class Provider {
     // do nothing
   }
 
-  private sendPushEvent(_args: SendEventArgs) {
-    // do noting
+  private sendMailEvent(args: SendEventArgs) {
+    if(args.provider.providerKey === 'SENDGRID_MAIL'){
+      
+    }
   }
 
   private async sendInAppEvent(args: SendEventArgs) {
-    if (args.provider.providerKey === 'PIGEON_WEB') {
+    if (args.provider.providerKey === 'PIGEON') {
       const pigeonProvider = new Pigeon();
       await pigeonProvider.sendMessage(args);
     }

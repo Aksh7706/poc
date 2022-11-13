@@ -118,18 +118,21 @@ model Provider {
 }
 
 enum Channel {
+  MAIL   @map("mail")
   PUSH   @map("push")
   IN_APP @map("in_app")
   OTHER  @map("other")
 }
 
 enum ProviderKey {
+  // Mail Provider
+  SENDGRID_MAIL @map("sendgrid_mail")
+
   // Push Provider
   FIREBASE @map("firebase")
 
   // In App Provider
-  PIGEON_WEB    @map("pigeon_web") // Our native InApp Provider for Web Platforms
-  PIGEON_MOBILE @map("pigeon_mobile") // Our native InApp Provider for Mobile Platforms
+  PIGEON @map("pigeon") // Our native InApp Provider for Web Platforms
 
   // Other Provider
   TELEGRAM @map("telegram")
@@ -143,12 +146,13 @@ enum MessageStatus {
 }
 
 model InAppWebNotifications {
-  requestId        String  @id @default(uuid())
-  appId            String  @map("app_id")
-  userWalletAdress String  @map("user_wallet_address")
+  requestId        String   @id @default(uuid())
+  appId            String   @map("app_id")
+  userWalletAdress String   @map("user_wallet_address")
   message          String
-  isRead           Boolean @map("is_read")
-  user             User    @relation(fields: [appId, userWalletAdress], references: [appId, walletAddress], onDelete: Cascade)
+  isRead           Boolean  @map("is_read")
+  user             User     @relation(fields: [appId, userWalletAdress], references: [appId, walletAddress], onDelete: Cascade)
+  createdAt        DateTime @default(now()) @map("created_at")
 }
 
 model NotificationLogs {
@@ -162,4 +166,5 @@ model NotificationLogs {
   userWalletAdress String        @map("user_wallet_address")
   message          String
   status           MessageStatus
+  createdAt        DateTime      @default(now()) @map("created_at")
 }
