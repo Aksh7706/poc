@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import Handlebars from 'handlebars';
 import Joi from 'joi';
 import { db } from '../db/db';
-import { appExists, eventExists, handleError, logEvent, userExists, validatePayload } from '../helper';
+import { accountExists, appExists, eventExists, handleError, logEvent, userExists, validatePayload } from '../helper';
 import { authValidation } from '../middleware/authValidation';
 import { Provider } from '../providers/provider';
 import { ErrorGeneric } from '../types';
@@ -63,7 +63,7 @@ export const sendEventHelper = async ({ appName, eventName, userWalletAddress, d
 export const sendEventFromApiKey = async (args: any) => {
   try {
     if (!args?.apiKey) return; // No Api key
-    const account = await db.account.getByApiKey(args.apiKey);
+    const account = await accountExists(args.apiKey);
     if (!account) return; // Account does not exist
 
     const payload: sendEventArgs | undefined = validatePayload(

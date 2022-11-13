@@ -3,9 +3,13 @@ import { db } from './db/db';
 import { ErrorAPIQuery, ErrorGeneric, ErrorInvalidArg, errorType, SendEventArgs } from './types';
 import { Response } from 'express';
 import { AxiosError } from 'axios';
-import { sendEventArgs } from './routes/send';
-import { Message } from 'amqplib';
 import { MessageStatus } from '@prisma/client';
+
+export const accountExists = async (apiKey: string) => {
+  const account = await db.account.getByApiKey(apiKey);
+  if (!account) throw new ErrorInvalidArg('Invalid api key');
+  return account;
+}
 
 export const appExists = async (appName: string, ownerAddress: string) => {
   const app = await db.app.get(appName, ownerAddress);

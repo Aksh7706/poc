@@ -7,7 +7,8 @@ import providerRoutes from './routes/provider';
 import eventRoutes from './routes/event';
 import webhookRoutes from './routes/webhook';
 import authRoutes from './routes/auth';
-import sendRoutes, { sendEventArgs, sendEventFromApiKey, sendEventHelper } from './routes/send';
+import notificationRoutes from './routes/notifications';
+import sendRoutes, { sendEventArgs, sendEventFromApiKey } from './routes/send';
 import { RabbitMqConnection } from './rabbitmq';
 import { Message } from 'amqplib';
 import cookieParser from 'cookie-parser';
@@ -44,6 +45,7 @@ app.use('/providers', providerRoutes);
 app.use('/events', eventRoutes);
 app.use('/apps', appRoutes, sendRoutes);
 app.use('/send', sendRoutes);
+app.use('/notifications', notificationRoutes);
 app.use(webhookRoutes);
 
 app.listen(port, async () => {
