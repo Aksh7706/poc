@@ -8,6 +8,7 @@ import eventRoutes from './routes/event';
 import webhookRoutes from './routes/webhook';
 import authRoutes from './routes/auth';
 import notificationRoutes from './routes/notifications';
+import userRoutes from './routes/user';
 import sendRoutes, { sendEventArgs, sendEventFromApiKey } from './routes/send';
 import { RabbitMqConnection } from './rabbitmq';
 import { Message } from 'amqplib';
@@ -49,6 +50,7 @@ app.use('/events', eventRoutes);
 app.use('/apps', appRoutes, sendRoutes);
 app.use('/send', sendRoutes);
 app.use('/notifications', notificationRoutes);
+app.use('/users', userRoutes);
 app.use(webhookRoutes);
 
 app.listen(port, async () => {

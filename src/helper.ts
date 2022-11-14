@@ -29,8 +29,8 @@ export const eventExists = async (appId: string, eventName: string) => {
   return event;
 };
 
-export const userExists = async (appName: string, walletAddress: string) => {
-  const user = await db.user.get(appName, walletAddress);
+export const userExists = async (appId: string, walletAddress: string) => {
+  const user = await db.user.get(appId, walletAddress);
   if (!user) throw new ErrorInvalidArg('No such user exist in this app');
   return user;
 };

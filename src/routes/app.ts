@@ -38,7 +38,7 @@ const deleteApp = async (req: Request, res: Response) => {
   return res.status(200).send('App Deleted Successfully');
 };
 
-router.get('/all', authValidation, getAllApps);
+router.get('/getAll', authValidation, getAllApps);
 router.post('/get', authValidation, getApp);
 router.post('/create', authValidation, createApp);
 router.post('/delete', authValidation, deleteApp);

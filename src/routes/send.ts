@@ -3,7 +3,7 @@ import Handlebars from 'handlebars';
 import Joi from 'joi';
 import { db } from '../db/db';
 import { accountExists, appExists, eventExists, handleError, logEvent, userExists, validatePayload } from '../helper';
-import { authValidation } from '../middleware/authValidation';
+import { authValidation, omniAuthValidation } from '../middleware/authValidation';
 import { Provider } from '../providers/provider';
 import { ErrorGeneric, SendEventArgsData } from '../types';
 
@@ -95,7 +95,7 @@ export const sendEventFromApiKey = async (args: any) => {
   }
 };
 
-const sendEventFromDashboard = async ({ body, ownerAddress }: Request, res: Response) => {
+const sendEvent = async ({ body, ownerAddress }: Request, res: Response) => {
   try {
     const payload: sendEventArgs | undefined = validatePayload({ ownerAddress: ownerAddress, ...body }, sendSchema);
     if (payload === undefined) return;
@@ -106,6 +106,6 @@ const sendEventFromDashboard = async ({ body, ownerAddress }: Request, res: Resp
   }
 };
 
-router.post('/dashboard', authValidation, sendEventFromDashboard);
+router.post('/', omniAuthValidation, sendEvent);
 
 export default router;
