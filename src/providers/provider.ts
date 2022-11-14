@@ -9,8 +9,8 @@ export class Provider {
   async setupProvider(args: SetupProviderArgs) {
     // add cases here
     switch (args.channel) {
-      case 'PUSH':
-        return this.setupPushProvider(args);
+      case 'MAIL':
+        return this.setupMailProvider(args);
       case 'IN_APP':
         return this.setupInAppProvider(args);
       case 'OTHER':
@@ -21,8 +21,8 @@ export class Provider {
   async removeProvider(args: SetupProviderArgs) {
     // add cases here
     switch (args.channel) {
-      case 'PUSH':
-        return this.removePushProvider(args);
+      case 'MAIL':
+        return this.removeMailProvider(args);
       case 'IN_APP':
         return this.removeInAppProvider(args);
       case 'OTHER':
@@ -69,11 +69,11 @@ export class Provider {
     }
   }
 
-  private setupPushProvider(_args: SetupProviderArgs) {
+  private setupMailProvider(_args: SetupProviderArgs) {
     // do noting
   }
 
-  private removePushProvider(_args: SetupProviderArgs) {
+  private removeMailProvider(_args: SetupProviderArgs) {
     // do noting
   }
 
