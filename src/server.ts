@@ -57,7 +57,6 @@ app.listen(port, async () => {
   const rabbitMqConnection = new RabbitMqConnection();
   await rabbitMqConnection.setUp();
   await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {
-    console.log('listening', msg?.content.toString());
     if (msg?.content) {
       const sendParams = JSON.parse(msg?.content.toString()) as sendEventArgs;
       await sendEventFromApiKey(sendParams);

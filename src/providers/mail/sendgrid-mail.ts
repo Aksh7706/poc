@@ -1,7 +1,13 @@
-import { SendEventArgs } from '../../types';
+import { ErrorInvalidArg, SendEventArgs, SetupProviderArgs } from '../../types';
 import sgMail from '@sendgrid/mail';
 
 export class SendGridMail {
+  async setupProvider({config} : SetupProviderArgs) {
+    if(!config.fromAddress || !config.fromName || !config.apiKey || !config.replyToAddress){
+      throw new ErrorInvalidArg('Invalid config provided.');
+    }
+  }
+
   async sendMessage({ provider, user, data }: SendEventArgs) {
     let fromAddress, fromName, apiKey, replyToAddress;
 

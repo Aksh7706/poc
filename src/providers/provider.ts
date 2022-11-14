@@ -70,8 +70,11 @@ export class Provider {
     }
   }
 
-  private setupMailProvider(_args: SetupProviderArgs) {
-    // do noting
+  private async setupMailProvider(args: SetupProviderArgs) {
+    if (args.provider === 'SENDGRID_MAIL') {
+      const sendgridProvider = new SendGridMail();
+      await sendgridProvider.setupProvider(args);
+    }
   }
 
   private removeMailProvider(_args: SetupProviderArgs) {

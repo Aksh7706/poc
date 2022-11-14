@@ -88,8 +88,10 @@ export const sendEventFromApiKey = async (args: any) => {
     );
     if (payload === undefined) return;
     await sendEventHelper(payload);
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log("Erorr : ", err?.message);
+    }
   }
 };
 
