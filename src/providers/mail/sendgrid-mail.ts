@@ -26,10 +26,13 @@ export class SendGridMail {
     //   html: '<strong>and easy to do anywhere, even with Node.js</strong>',
     // };
     
-    sgMail.send({
+    await sgMail.send({
       to: user.email,
       replyTo: replyToAddress,
-      from: fromAddress,
+      from: {
+        email: fromAddress,
+        name: fromName
+      },
       subject: event.template,
       text: event.template,
     });

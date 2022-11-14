@@ -12,6 +12,7 @@ import sendRoutes, { sendEventArgs, sendEventFromApiKey } from './routes/send';
 import { RabbitMqConnection } from './rabbitmq';
 import { Message } from 'amqplib';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 const app = express();
 const port = 3000;
@@ -35,6 +36,8 @@ function setUpSecurityHeaders(app: Express): void {
 
 app.use(cors({ credentials: true }));
 app.use(cookieParser());
+
+app.use('/images', express.static(path.join(__dirname, 'static', 'provider')))
 
 setUpSecurityHeaders(app);
 setUpParsing(app);

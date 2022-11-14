@@ -18,7 +18,7 @@ const login = async (req: Request, res: Response) => {
     });
   }
 
-  const token = jwt.sign({ ownerAddress: ownerAddress }, 'YOUR_SECRET_KEY', { expiresIn: '7d' });
+  const token = jwt.sign({ ownerAddress: ownerAddress }, 'YOUR_SECRET_KEY', { expiresIn: '365d' });
   return res.cookie('access_token', token).status(200).send(account);
 };
 

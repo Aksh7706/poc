@@ -5,6 +5,7 @@ import { Provider } from '../providers/provider';
 import Joi from 'joi';
 import { appExists, checkUniqueProvider, handleError, providerExists, validatePayload } from '../helper';
 import { authValidation } from '../middleware/authValidation';
+import allProvidersData from '../static/allProvider.json';
 
 const router = express.Router();
 
@@ -117,10 +118,15 @@ const getConnectedEvents = async ({ body, ownerAddress }: Request, res: Response
   }
 };
 
+const allAvailableProviders = async (_: Request, res: Response) => {
+  return res.status(200).json(allProvidersData)
+};
+
 router.post('/get', authValidation, getProvider);
 router.post('/getAll', authValidation, getAllProviders);
 router.post('/create', authValidation, createProvider);
 router.post('/delete', authValidation, deleteProvider);
 router.post('/getConnectedEvents', authValidation, getConnectedEvents);
 
+router.get('/allAvailable', allAvailableProviders);
 export default router;
