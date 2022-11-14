@@ -8,102 +8,92 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AppDB = void 0;
-class AppDB {
+exports.AccountDB = void 0;
+const generate_api_key_1 = __importDefault(require("generate-api-key"));
+class AccountDB {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    getAll(ownerAddress) {
+    getAll() {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.prisma.app.findMany({
+            return this.prisma.account.findMany({
+                include: {
+                    App: true,
+                },
+            });
+        });
+    }
+    get(ownerAddress) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const app = yield this.prisma.account.findUnique({
                 where: {
                     ownerAddress: ownerAddress,
                 },
-                include: this.includeRelations(),
-            });
-        });
-    }
-    getById(appId) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const app = yield this.prisma.app.findUnique({
-                where: {
-                    id: appId,
+                include: {
+                    App: true,
                 },
-                include: this.includeRelations(),
             });
             return app;
         });
     }
-    get(appName, ownerAddress) {
+    getByApiKey(apiKey) {
         return __awaiter(this, void 0, void 0, function* () {
-            const app = yield this.prisma.app.findUnique({
+            const app = yield this.prisma.account.findUnique({
                 where: {
-                    name_ownerAddress: {
-                        name: appName,
-                        ownerAddress: ownerAddress,
-                    },
+                    apiKey: apiKey,
                 },
-                include: this.includeRelations(),
             });
             return app;
         });
     }
-    create({ name, description, metadata, ownerAddress }) {
+    create({ ownerAddress, name }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const app = yield this.prisma.app.create({
+            const account = yield this.prisma.account.create({
                 data: {
-                    name: name,
-                    description: description,
-                    metadata: metadata,
                     ownerAddress: ownerAddress,
+                    apiKey: (0, generate_api_key_1.default)({ method: 'string', length: 30 }),
+                    name: name,
                 },
-                include: this.includeRelations(),
+                include: {
+                    App: true,
+                },
             });
-            return app;
+            return account;
         });
     }
-    update(appName, ownerAddress, { description, metadata, name }) {
+    update(ownerAddress, { name }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const app = yield this.prisma.app.upsert({
+            const app = yield this.prisma.account.upsert({
                 where: {
-                    name_ownerAddress: {
-                        name: appName,
-                        ownerAddress: ownerAddress,
-                    },
+                    ownerAddress: ownerAddress,
                 },
                 update: {
                     name: name,
-                    description: description,
-                    metadata: metadata,
                 },
                 create: {
                     name: name,
-                    description: description,
-                    metadata: metadata,
+                    apiKey: (0, generate_api_key_1.default)({ method: 'string', length: 30 }),
                     ownerAddress: ownerAddress,
                 },
-                include: this.includeRelations(),
+                include: {
+                    App: true,
+                },
             });
             return app;
         });
     }
-    delete(appName, ownerAddress) {
+    delete(ownerAddress) {
         return __awaiter(this, void 0, void 0, function* () {
-            yield this.prisma.app.deleteMany({
+            yield this.prisma.account.deleteMany({
                 where: {
                     ownerAddress: ownerAddress,
-                    name: appName,
                 },
             });
         });
     }
-    includeRelations(Event = true, Provider = true, User = true) {
-        return {
-            Event: Event,
-            Provider: Provider,
-            User: User,
-        };
-    }
 }
-exports.AppDB = AppDB;
+exports.AccountDB = AccountDB;

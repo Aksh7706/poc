@@ -1,76 +1,125 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EventDB = void 0;
 class EventDB {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getAll(appName, channel, providerType) {
-        return this.prisma.event.findMany({
-            where: {
-                appName: appName,
-                provider: {
-                    channel: channel,
-                    providerKey: providerType,
+    getAll(appId, channel, providerType) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.prisma.event.findMany({
+                where: {
+                    appId: appId,
                 },
-            },
-            include: {
-                provider: true,
-            },
+                include: {
+                    connectedProviders: true,
+                },
+            });
         });
     }
-    async get(appName, eventName) {
-        const event = await this.prisma.event.findUnique({
-            where: {
-                name_appName: {
+    get(appId, eventName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const event = yield this.prisma.event.findUnique({
+                where: {
+                    name_appId: {
+                        appId: appId,
+                        name: eventName
+                    }
+                },
+                include: {
+                    connectedProviders: true,
+                },
+            });
+            return event;
+        });
+    }
+    create(appId, args) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const event = yield this.prisma.event.create({
+                data: Object.assign({ appId: appId }, args),
+                include: {
+                    connectedProviders: true,
+                },
+            });
+            return event;
+        });
+    }
+    update(appId, eventName, args) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const event = yield this.prisma.event.upsert({
+                where: {
+                    name_appId: {
+                        appId: appId,
+                        name: eventName
+                    }
+                },
+                update: Object.assign({}, args),
+                create: Object.assign({ appId: appId, name: eventName }, args),
+                include: {
+                    connectedProviders: true,
+                },
+            });
+            return event;
+        });
+    }
+    delete(appId, eventName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.prisma.event.deleteMany({
+                where: {
                     name: eventName,
-                    appName: appName,
+                    appId: appId,
                 },
-            },
-            include: {
-                provider: true,
-            },
+            });
         });
-        return event;
     }
-    async create(appName, args) {
-        const event = await this.prisma.event.create({
-            data: {
-                appName: appName,
-                ...args,
-            },
-            include: {
-                provider: true,
-            },
-        });
-        return event;
-    }
-    async update(appName, eventName, args) {
-        const event = await this.prisma.event.upsert({
-            where: {
-                name_appName: {
-                    name: eventName,
-                    appName: appName,
+    connectProvider(appId, eventName, providerName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connectedProvider = yield this.prisma.eventProviders.create({
+                data: {
+                    appId: appId,
+                    eventName: eventName,
+                    providerName: providerName,
                 },
-            },
-            update: { ...args },
-            create: {
-                appName: appName,
-                name: eventName,
-                ...args,
-            },
-            include: {
-                provider: true,
-            },
+                include: {
+                    Event: true,
+                    provider: true,
+                },
+            });
+            return connectedProvider;
         });
-        return event;
     }
-    async delete(appName, eventName) {
-        await this.prisma.event.deleteMany({
-            where: {
-                name: eventName,
-                appName: appName,
-            },
+    disconnectProvider(appId, eventName, providerName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.prisma.eventProviders.deleteMany({
+                where: {
+                    appId: appId,
+                    eventName: eventName,
+                    providerName: providerName,
+                },
+            });
+        });
+    }
+    getConnectedProviders(appId, eventName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const connectedProviders = yield this.prisma.eventProviders.findMany({
+                where: {
+                    appId: appId,
+                    eventName: eventName,
+                },
+                include: {
+                    provider: true,
+                },
+            });
+            return connectedProviders;
         });
     }
 }

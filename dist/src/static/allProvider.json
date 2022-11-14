@@ -1,0 +1,54 @@
+{
+    "providers": [
+        {
+            "config": [
+                {
+                    "key": "apiKey",
+                    "display_name": "Api Key",
+                    "required": true,
+                    "type": "text"
+                },
+                {
+                    "key": "fromAddress",
+                    "display_name": "From Address",
+                    "required": true,
+                    "type": "text"
+                },
+                {
+                    "key": "fromName",
+                    "display_name": "From Name",
+                    "required": true,
+                    "type": "text"
+                },
+                {
+                    "key": "replyToAddress",
+                    "display_name": "Reply To Address",
+                    "required": true,
+                    "type": "text"
+                }
+            ],
+            "channel": "EMAIL",
+            "provider_key": "SENDGRID_MAIL",
+            "display_name": "Sendgrid"
+        },
+        {
+            "config": [
+                {
+                    "key": "telegramBotToken",
+                    "display_name": "Bot Token",
+                    "required": true,
+                    "type": "text"
+                }
+            ],
+            "channel": "OTHER",
+            "provider_key": "TELEGRAM",
+            "display_name": "Telegram"
+        },
+        {
+            "config": [],
+            "channel": "IN_APP",
+            "provider_key": "PIGEON",
+            "display_name": "Pigeon"
+        }
+    ]
+}

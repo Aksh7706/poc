@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.errorType = exports.ErrorGettingAllOwnedNFTsInfo = exports.ErrorGettingNFTInfo = exports.ErrorGettingCollections = exports.ErrorInvalidArg = exports.ErrorAPIQuery = exports.ErrorInvalidAddress = exports.ErrorInvalidRange = exports.ErrorInvalidPrivateKey = exports.ErrorInvalidSeed = exports.ErrorInvalidMnemnoic = exports.ErrorGeneric = exports.ErrorSDKAuthService = exports.ErrorSDKAuthInitialization = exports.ErrorSDKInitialization = void 0;
+exports.errorType = exports.ErrorInvalidArg = exports.ErrorAPIQuery = exports.ErrorGeneric = exports.ErrorGettingAllOwnedNFTsInfo = exports.ErrorGettingNFTInfo = exports.ErrorGettingCollections = exports.ErrorInvalidAddress = exports.ErrorInvalidRange = exports.ErrorInvalidPrivateKey = exports.ErrorInvalidSeed = exports.ErrorInvalidMnemnoic = exports.ErrorSDKAuthService = exports.ErrorSDKAuthInitialization = exports.ErrorSDKInitialization = void 0;
 class ErrorSDKInitialization extends Error {
 }
 exports.ErrorSDKInitialization = ErrorSDKInitialization;
@@ -10,9 +10,6 @@ exports.ErrorSDKAuthInitialization = ErrorSDKAuthInitialization;
 class ErrorSDKAuthService extends Error {
 }
 exports.ErrorSDKAuthService = ErrorSDKAuthService;
-class ErrorGeneric extends Error {
-}
-exports.ErrorGeneric = ErrorGeneric;
 class ErrorInvalidMnemnoic extends Error {
 }
 exports.ErrorInvalidMnemnoic = ErrorInvalidMnemnoic;
@@ -28,12 +25,6 @@ exports.ErrorInvalidRange = ErrorInvalidRange;
 class ErrorInvalidAddress extends Error {
 }
 exports.ErrorInvalidAddress = ErrorInvalidAddress;
-class ErrorAPIQuery extends Error {
-}
-exports.ErrorAPIQuery = ErrorAPIQuery;
-class ErrorInvalidArg extends Error {
-}
-exports.ErrorInvalidArg = ErrorInvalidArg;
 class ErrorGettingCollections extends Error {
 }
 exports.ErrorGettingCollections = ErrorGettingCollections;
@@ -43,6 +34,24 @@ exports.ErrorGettingNFTInfo = ErrorGettingNFTInfo;
 class ErrorGettingAllOwnedNFTsInfo extends Error {
 }
 exports.ErrorGettingAllOwnedNFTsInfo = ErrorGettingAllOwnedNFTsInfo;
+class ErrorGeneric extends Error {
+    constructor(err) {
+        super(JSON.stringify(err));
+    }
+}
+exports.ErrorGeneric = ErrorGeneric;
+class ErrorAPIQuery extends Error {
+    constructor(err) {
+        super(JSON.stringify({ reason: 'API_FAILURE', explanation: err }));
+    }
+}
+exports.ErrorAPIQuery = ErrorAPIQuery;
+class ErrorInvalidArg extends Error {
+    constructor(err) {
+        super(JSON.stringify({ reason: 'INVALID_PAYLOAD', explanation: err }));
+    }
+}
+exports.ErrorInvalidArg = ErrorInvalidArg;
 exports.errorType = {
     ErrorSDKInitialization: 'SDK not initialized properly',
     ErrorSDKAuthInitialization: 'initAuth method should be called before connect method',

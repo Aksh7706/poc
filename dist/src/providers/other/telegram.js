@@ -1,73 +1,83 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Telegram = void 0;
-const axios_1 = __importStar(require("axios"));
+const axios_1 = __importDefault(require("axios"));
 const types_1 = require("../../types");
 class Telegram {
     constructor() {
         this.baseURL = 'https://api.telegram.org';
         this.serverURL = process.env.SERVER_URL;
-        this.handleError = (err) => {
-            if (err instanceof axios_1.AxiosError) {
-                const data = err.response?.data;
-                return Error(data);
+    }
+    //Send Api Telegram
+    //https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}
+    sendMessage({ user, provider, data }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let chatId, token;
+            const chatIdData = user.telegramData.filter((data) => data.providerName === provider.name)[0];
+            chatId = chatIdData === null || chatIdData === void 0 ? void 0 : chatIdData.chatId;
+            if (provider.config) {
+                const config = provider.config;
+                token = config.telegramBotToken;
             }
-            if (err instanceof Error)
-                return err;
-            return new types_1.ErrorGeneric(types_1.errorType.ErrorGeneric);
-        };
+            if (!token) {
+                console.log('Send Event Log : Bot token not found');
+                return;
+            }
+            if (!chatId) {
+                console.log('Send Event Log : User chat id not found');
+                return;
+            }
+            const params = {
+                chat_id: chatId,
+                text: data.message,
+            };
+            const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
+            yield axios_1.default.get(methodEndpoint, { params });
+            //console.log(data);
+        });
     }
-    async setupProvider(app, token) {
-        if (!token)
-            throw new types_1.ErrorInvalidArg('Bot Access Token Invalid');
-        try {
-            await this.addWebhook(app, token);
-        }
-        catch (err) {
-            throw err;
-        }
+    setupProvider(appId, providerName, token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!token)
+                throw new types_1.ErrorInvalidArg('Bot Access Token Invalid');
+            yield this.addWebhook(appId, providerName, token);
+        });
     }
-    async addWebhook(app, token) {
-        const params = { url: `${this.serverURL}/webhook/${app}` };
-        const methodEndpoint = `${this.baseURL}/bot${token}/setWebhook`;
-        try {
-            const { data } = await axios_1.default.get(methodEndpoint, { params });
+    removeProvider(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!token)
+                throw new types_1.ErrorInvalidArg('Bot Access Token Invalid');
+            yield this.deleteWebhook(token);
+        });
+    }
+    addWebhook(appId, providerName, token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const params = { url: `${this.serverURL}/webhook/${appId}/${providerName}` };
+            const methodEndpoint = `${this.baseURL}/bot${token}/setWebhook`;
+            const { data } = yield axios_1.default.get(methodEndpoint, { params });
             if (!data.ok)
                 throw new types_1.ErrorInvalidArg(data.description);
-        }
-        catch (err) {
-            throw this.handleError(err);
-        }
+        });
     }
-    async deleteWebhook(token) {
-        const methodEndpoint = `${this.baseURL}/bot${token}/deleteWebhook`;
-        try {
-            const { data } = await axios_1.default.get(methodEndpoint);
+    deleteWebhook(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const methodEndpoint = `${this.baseURL}/bot${token}/deleteWebhook`;
+            const { data } = yield axios_1.default.get(methodEndpoint);
             if (!data.ok)
                 throw new types_1.ErrorInvalidArg(data.description);
-        }
-        catch (err) {
-            throw this.handleError(err);
-        }
+        });
     }
 }
 exports.Telegram = Telegram;

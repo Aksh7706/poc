@@ -14,3 +14,5 @@ __exportStar(require("./app"), exports);
 __exportStar(require("./event"), exports);
 __exportStar(require("./provider"), exports);
 __exportStar(require("./user"), exports);
+__exportStar(require("./inapp-notification"), exports);
+__exportStar(require("./account"), exports);
