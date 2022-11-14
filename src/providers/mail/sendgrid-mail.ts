@@ -2,7 +2,7 @@ import { SendEventArgs } from '../../types';
 import sgMail from '@sendgrid/mail';
 
 export class SendGridMail {
-  async sendMessage({ provider, user, event }: SendEventArgs) {
+  async sendMessage({ provider, user, data }: SendEventArgs) {
     let fromAddress, fromName, apiKey, replyToAddress;
 
     if (provider.config) {
@@ -33,8 +33,8 @@ export class SendGridMail {
         email: fromAddress,
         name: fromName
       },
-      subject: event.template,
-      text: event.template,
+      subject: data.subject,
+      html: data.message,
     });
   }
 }

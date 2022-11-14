@@ -8,7 +8,7 @@ export class Telegram {
   //Send Api Telegram
   //https://api.telegram.org/bot{bot_token}/sendMessage?chat_id={chat_id}&text={text}
 
-  async sendMessage({ user, provider, message }: SendEventArgs) {
+  async sendMessage({ user, provider, data }: SendEventArgs) {
     let chatId, token;
     const chatIdData = user.telegramData.filter((data) => data.providerName === provider.name)[0];
     chatId = chatIdData?.chatId;
@@ -29,12 +29,12 @@ export class Telegram {
 
     const params = {
       chat_id: chatId,
-      text: message,
+      text: data.message,
     };
-    
+
     const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
 
-    const { data } = await axios.get(methodEndpoint, { params });
+    await axios.get(methodEndpoint, { params });
     //console.log(data);
   }
 

@@ -5,7 +5,7 @@ import { db } from '../db/db';
 import { accountExists, appExists, eventExists, handleError, logEvent, userExists, validatePayload } from '../helper';
 import { authValidation } from '../middleware/authValidation';
 import { Provider } from '../providers/provider';
-import { ErrorGeneric } from '../types';
+import { ErrorGeneric, SendEventArgsData } from '../types';
 
 const router = express.Router();
 
@@ -31,9 +31,19 @@ export const sendEventHelper = async ({ appName, eventName, userWalletAddress, d
   const app = await appExists(appName, ownerAddress);
   const event = await eventExists(app.id, eventName);
   const user = await userExists(app.id, userWalletAddress);
+  const template = event.template as Record<string, string>;
 
-  const template = Handlebars.compile(event.template);
-  const message = template(data);
+  const parsedMsg = Handlebars.compile(template?.message ?? '');
+  const message = parsedMsg(data);
+
+  const parsedSubject = Handlebars.compile(template?.subject ?? '');
+  const subject = parsedSubject(data);
+
+  const parsedData: SendEventArgsData = {
+    message: message,
+    subject: subject,
+  };
+
   let failedNotifications = 0;
 
   await Promise.all(
@@ -46,12 +56,12 @@ export const sendEventHelper = async ({ appName, eventName, userWalletAddress, d
           event: event,
           provider: provider,
           user: user,
-          message: message,
+          data: parsedData,
         });
-        await logEvent({ app: app, event: event, message: message, provider: provider, user: user }, 'DELIVERED');
+        await logEvent({ app: app, event: event, data: parsedData, provider: provider, user: user }, 'DELIVERED');
       } catch (e) {
         failedNotifications += 1;
-        await logEvent({ app: app, event: event, message: message, provider: provider, user: user }, 'FAILED');
+        await logEvent({ app: app, event: event, data: parsedData, provider: provider, user: user }, 'FAILED');
       }
     }),
   );

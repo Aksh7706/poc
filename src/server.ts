@@ -52,9 +52,8 @@ app.use('/notifications', notificationRoutes);
 app.use(webhookRoutes);
 
 app.listen(port, async () => {
-  console.log(`Timezones by location application is running on port ${port}.`);
-  console.log(process.env.DATABASE_URL);
-
+  console.log(`Near notification platform is running on port ${port}.`);
+  
   const rabbitMqConnection = new RabbitMqConnection();
   await rabbitMqConnection.setUp();
   await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {

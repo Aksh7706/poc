@@ -9,7 +9,7 @@ export const accountExists = async (apiKey: string) => {
   const account = await db.account.getByApiKey(apiKey);
   if (!account) throw new ErrorInvalidArg('Invalid api key');
   return account;
-}
+};
 
 export const appExists = async (appName: string, ownerAddress: string) => {
   const app = await db.app.get(appName, ownerAddress);
@@ -68,8 +68,7 @@ export const handleError = (err: any, res: Response) => {
   }
 };
 
-
-export const logEvent = async ({app,event, message,provider,user } : SendEventArgs, status: MessageStatus )=> {
+export const logEvent = async ({ app, event, data, provider, user }: SendEventArgs, status: MessageStatus) => {
   await db.log.create({
     appName: app.name,
     eventName: event.name,
@@ -78,7 +77,7 @@ export const logEvent = async ({app,event, message,provider,user } : SendEventAr
     channel: provider.channel,
     providerType: provider.providerKey,
     userWalletAdress: user.walletAddress,
-    message: message,
+    message: JSON.stringify(data),
     status: status,
-  })
-} 
+  });
+};

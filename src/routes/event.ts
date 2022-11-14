@@ -10,7 +10,7 @@ const createSchema = Joi.object({
   appName: Joi.string().required(),
   ownerAddress: Joi.string().required(),
   eventName: Joi.string().required(),
-  template: Joi.string().required(),
+  template: Joi.object().required(),
   metadata: Joi.object().optional(),
 });
 
@@ -25,7 +25,7 @@ type CreateEventRequestBody = {
   readonly appName: string;
   readonly ownerAddress: string;
   readonly eventName: string;
-  readonly template: string;
+  readonly template: Record<string, string>;
   readonly metadata?: Record<string, string>;
 };
 

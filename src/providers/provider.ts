@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { SendEventArgs, SetupProviderArgs } from '../types';
 import { Pigeon } from './inapp/pegion';
+import { SendGridMail } from './mail/sendgrid-mail';
 import { Telegram } from './other/telegram';
 
 export class Provider {
@@ -85,9 +86,10 @@ export class Provider {
     // do nothing
   }
 
-  private sendMailEvent(args: SendEventArgs) {
-    if(args.provider.providerKey === 'SENDGRID_MAIL'){
-      
+  private async sendMailEvent(args: SendEventArgs) {
+    if (args.provider.providerKey === 'SENDGRID_MAIL') {
+      const sendgridProvider = new SendGridMail();
+      await sendgridProvider.sendMessage(args);
     }
   }
 

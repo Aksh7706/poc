@@ -76,7 +76,7 @@ model TelegramProvider {
 model Event {
   id                 String           @id @default(uuid())
   name               String
-  template           String
+  template           Json
   metadata           Json?
   connectedProviders EventProviders[]
   app                App              @relation(fields: [appId], references: [id], onDelete: Cascade)

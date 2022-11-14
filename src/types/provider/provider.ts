@@ -14,5 +14,10 @@ export type SendEventArgs = {
   user: User & {telegramData: TelegramProvider[]}
   provider: Provider;
   event: Event;
-  message: string;
+  data: SendEventArgsData;
 };
+
+export type SendEventArgsData = {
+  message: string;
+  subject: string;
+}
