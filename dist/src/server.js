@@ -63,7 +63,19 @@ function setUpSecurityHeaders(app) {
         next();
     });
 }
-app.use((0, cors_1.default)({ credentials: true }));
+var whitelist = ['http://localhost:3000' /** other domains if any */];
+var corsOptions = {
+    credentials: true,
+    origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use((0, cookie_parser_1.default)());
 app.use('/images', express_1.default.static(path_1.default.join(__dirname, 'static', 'provider')));
 setUpSecurityHeaders(app);

@@ -31,23 +31,26 @@ function setUpSecurityHeaders(app: Express): void {
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Content-Security-Policy', "default-src 'none'");
-    res.header("Access-Control-Allow-Origin", "*");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization, 'Content-Type' : 'multipart/form-data' ,* "
-  );
-  res.header(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PATCH, PUT, DELETE, OPTIONS"
-  );
     next();
   });
 }
 
-app.use(cors({ credentials: true }));
+var whitelist = ['http://localhost:3000' /** other domains if any */];
+var corsOptions = {
+  credentials: true,
+  origin: function (origin: any, callback: any) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+
+app.use(cors(corsOptions));
 app.use(cookieParser());
 
-app.use('/images', express.static(path.join(__dirname, 'static', 'provider')))
+app.use('/images', express.static(path.join(__dirname, 'static', 'provider')));
 
 setUpSecurityHeaders(app);
 setUpParsing(app);
@@ -64,7 +67,7 @@ app.use(webhookRoutes);
 
 app.listen(port, async () => {
   console.log(`Near notification platform is running on port ${port}.`);
-  
+
   const rabbitMqConnection = new RabbitMqConnection();
   await rabbitMqConnection.setUp();
   await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {
