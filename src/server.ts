@@ -38,13 +38,7 @@ function setUpSecurityHeaders(app: Express): void {
 var whitelist = ['http://localhost:3000' /** other domains if any */];
 var corsOptions = {
   credentials: true,
-  origin: function (origin: any, callback: any) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: '*',
 };
 
 app.use(cors(corsOptions));
