@@ -43,9 +43,11 @@ var corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-app.get('/images/:imageName', (req, res) => {
-  res.sendFile(path.join(__dirname,'../../src', 'static', 'provider', req.params.imageName))
-});
+// app.get('/images/:imageName', (req, res) => {
+//   res.sendFile(path.join(__dirname,'../../src', 'static', 'provider', req.params.imageName))
+// });
+
+app.use('/images', express.static(path.join(__dirname, '../../src', 'static', 'provider')))
 
 setUpSecurityHeaders(app);
 setUpParsing(app);
