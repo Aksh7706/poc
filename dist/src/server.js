@@ -56,16 +56,14 @@ function setUpParsing(app) {
 }
 function setUpSecurityHeaders(app) {
     app.use((_, res, next) => {
-        res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-        res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-        res.setHeader('X-Content-Type-Options', 'nosniff');
-        res.setHeader('Content-Security-Policy', "default-src 'none'");
+        res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,UPDATE,OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept');
         next();
     });
 }
 var corsOptions = {
     credentials: true,
-    origin: true
+    origin: true,
 };
 app.use((0, cors_1.default)(corsOptions));
 app.use((0, cookie_parser_1.default)());
