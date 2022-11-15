@@ -35,7 +35,6 @@ function setUpSecurityHeaders(app: Express): void {
   });
 }
 
-var whitelist = ['http://localhost:3000' /** other domains if any */];
 var corsOptions = {
   credentials: true,
   origin: true
@@ -44,7 +43,9 @@ var corsOptions = {
 app.use(cors(corsOptions));
 app.use(cookieParser());
 
-app.use('/images', express.static(path.join(__dirname, 'static', 'provider')));
+app.get('/images/:imageName', (req, res) => {
+  res.sendFile(path.join(__dirname,'../../src', 'static', 'provider', req.params.imageName))
+});
 
 setUpSecurityHeaders(app);
 setUpParsing(app);

@@ -63,14 +63,15 @@ function setUpSecurityHeaders(app) {
         next();
     });
 }
-var whitelist = ['http://localhost:3000' /** other domains if any */];
 var corsOptions = {
     credentials: true,
     origin: true
 };
 app.use((0, cors_1.default)(corsOptions));
 app.use((0, cookie_parser_1.default)());
-app.use('/images', express_1.default.static(path_1.default.join(__dirname, 'static', 'provider')));
+app.get('/images/:imageName', (req, res) => {
+    res.sendFile(path_1.default.join(__dirname, '../../src', 'static', 'provider', req.params.imageName));
+});
 setUpSecurityHeaders(app);
 setUpParsing(app);
 app.use('/account', account_1.default);
