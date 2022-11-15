@@ -30,7 +30,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const token = jsonwebtoken_1.default.sign({ ownerAddress: ownerAddress }, 'YOUR_SECRET_KEY', { expiresIn: '365d' });
     return res
         .cookie('access_token', token, {
-        domain: req.headers.origin,
+        domain: 'localhost',
     })
         .status(200)
         .send(account);
