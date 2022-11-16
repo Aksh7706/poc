@@ -62,6 +62,18 @@ const getEvent = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void
         return (0, helper_1.handleError)(err, res);
     }
 });
+const getAllEvents = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!body.appName)
+        return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+    try {
+        const app = yield (0, helper_1.appExists)(body.appName, ownerAddress);
+        const events = yield db_1.db.event.getAll(app.id);
+        return res.status(200).send(events);
+    }
+    catch (err) {
+        return (0, helper_1.handleError)(err, res);
+    }
+});
 const deleteEvent = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!body.appName || !body.eventName)
         return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
@@ -119,6 +131,7 @@ const getConnectedProviders = ({ body, ownerAddress }, res) => __awaiter(void 0,
     }
 });
 router.post('/get', authValidation_1.authValidation, getEvent);
+router.post('/getAll', authValidation_1.authValidation, getAllEvents);
 router.post('/create', authValidation_1.authValidation, createEvent);
 router.post('/delete', authValidation_1.authValidation, deleteEvent);
 router.post('/connect', authValidation_1.authValidation, connectProvider);

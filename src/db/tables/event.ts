@@ -8,7 +8,7 @@ export class EventDB {
     this.prisma = prisma;
   }
 
-  async getAll(appId: string, channel?: Channel, providerType?: ProviderKey): Promise<Event[]> {
+  async getAll(appId: string, channel?: Channel, providerType?: ProviderKey) {
     return this.prisma.event.findMany({
       where: {
         appId: appId,

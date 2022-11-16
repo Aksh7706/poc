@@ -70,6 +70,17 @@ const getEvent = async ({ body, ownerAddress }: Request, res: Response) => {
   }
 };
 
+const getAllEvents = async ({ body, ownerAddress }: Request, res: Response) => {
+  if (!body.appName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
+  try {
+    const app = await appExists(body.appName, ownerAddress!);
+    const events = await db.event.getAll(app.id);
+    return res.status(200).send(events);
+  } catch (err) {
+    return handleError(err, res);
+  }
+};
+
 const deleteEvent = async ({ body, ownerAddress }: Request, res: Response) => {
   if (!body.appName || !body.eventName) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
@@ -131,6 +142,7 @@ const getConnectedProviders = async ({ body, ownerAddress }: Request, res: Respo
 };
 
 router.post('/get', authValidation, getEvent);
+router.post('/getAll', authValidation, getAllEvents);
 router.post('/create', authValidation, createEvent);
 router.post('/delete', authValidation, deleteEvent);
 
