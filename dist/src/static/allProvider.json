@@ -27,7 +27,7 @@
                     "type": "text"
                 }
             ],
-            "channel": "EMAIL",
+            "channel": "MAIL",
             "provider_key": "SENDGRID_MAIL",
             "display_name": "Sendgrid"
         },
