@@ -57,6 +57,11 @@ class AccountDB {
                     ownerAddress: ownerAddress,
                     apiKey: (0, generate_api_key_1.default)({ method: 'string', length: 30 }),
                     name: name,
+                    App: {
+                        create: {
+                            name: "My Demo App",
+                        }
+                    }
                 },
                 include: {
                     App: true,

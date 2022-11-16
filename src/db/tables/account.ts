@@ -46,6 +46,11 @@ export class AccountDB {
         ownerAddress: ownerAddress,
         apiKey: generateApiKey({ method: 'string', length: 30 }) as string,
         name: name,
+        App: {
+          create: {
+            name: "My Demo App",
+          }
+        }
       },
       include: {
         App: true,
