@@ -29,7 +29,7 @@ const connectSchema = joi_1.default.object({
     appName: joi_1.default.string().required(),
     ownerAddress: joi_1.default.string().required(),
     eventName: joi_1.default.string().required(),
-    providerName: joi_1.default.string().required(),
+    providerName: joi_1.default.array().items(joi_1.default.string()),
 });
 const createEvent = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -93,10 +93,26 @@ const connectProvider = ({ body, ownerAddress }, res) => __awaiter(void 0, void 
         if (payload === undefined)
             return;
         const app = yield (0, helper_1.appExists)(payload.appName, payload.ownerAddress);
-        yield (0, helper_1.providerExists)(app.id, payload.providerName);
         yield (0, helper_1.eventExists)(app.id, payload.eventName);
-        const updatedData = yield db_1.db.event.connectProvider(app.id, payload.eventName, payload.providerName);
-        return res.status(200).send(updatedData);
+        let failedConnect = [];
+        let successConnect = [];
+        yield Promise.all(payload.providerName.map((pName) => __awaiter(void 0, void 0, void 0, function* () {
+            const provider = yield db_1.db.provider.get(app.id, pName);
+            if (!provider) {
+                failedConnect.push(pName);
+                return;
+            }
+            yield db_1.db.event.connectProvider(app.id, payload.eventName, pName);
+            successConnect.push(pName);
+        })));
+        return res.status(200).send({
+            appName: payload.appName,
+            eventName: payload.eventName,
+            requestedConnect: payload.providerName,
+            successConnect: successConnect,
+            failedConnect: failedConnect,
+            failedCount: failedConnect.length,
+        });
     }
     catch (err) {
         return (0, helper_1.handleError)(err, res);
@@ -108,10 +124,26 @@ const disconnectProvider = ({ body, ownerAddress }, res) => __awaiter(void 0, vo
         if (payload === undefined)
             return;
         const app = yield (0, helper_1.appExists)(payload.appName, payload.ownerAddress);
-        yield (0, helper_1.providerExists)(app.id, payload.providerName);
         yield (0, helper_1.eventExists)(app.id, payload.eventName);
-        yield db_1.db.event.disconnectProvider(app.id, payload.eventName, payload.providerName);
-        return res.sendStatus(200);
+        let failedDisconnect = [];
+        let successDisconnect = [];
+        yield Promise.all(payload.providerName.map((pName) => __awaiter(void 0, void 0, void 0, function* () {
+            const provider = yield db_1.db.provider.get(app.id, pName);
+            if (!provider) {
+                failedDisconnect.push(pName);
+                return;
+            }
+            yield db_1.db.event.disconnectProvider(app.id, payload.eventName, pName);
+            successDisconnect.push(pName);
+        })));
+        return res.status(200).send({
+            appName: payload.appName,
+            eventName: payload.eventName,
+            requestedConnect: payload.providerName,
+            successDisconnect: successDisconnect,
+            failedDisconnect: failedDisconnect,
+            failedCount: failedDisconnect.length,
+        });
     }
     catch (err) {
         return (0, helper_1.handleError)(err, res);

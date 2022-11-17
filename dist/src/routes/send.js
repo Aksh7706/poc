@@ -30,25 +30,26 @@ const sendSchema = joi_1.default.object({
     data: joi_1.default.object().optional(),
 });
 const sendEventHelper = ({ appName, eventName, userWalletAddress, data, ownerAddress }) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
     const providerAPI = new provider_1.Provider();
     const app = yield (0, helper_1.appExists)(appName, ownerAddress);
     const event = yield (0, helper_1.eventExists)(app.id, eventName);
     const user = yield (0, helper_1.userExists)(app.id, userWalletAddress);
     const template = event.template;
-    const parsedMsg = handlebars_1.default.compile((_a = template === null || template === void 0 ? void 0 : template.message) !== null && _a !== void 0 ? _a : '');
-    const message = parsedMsg(data);
-    const parsedSubject = handlebars_1.default.compile((_b = template === null || template === void 0 ? void 0 : template.subject) !== null && _b !== void 0 ? _b : '');
-    const subject = parsedSubject(data);
-    const parsedData = {
-        message: message,
-        subject: subject,
-    };
     let failedNotifications = 0;
     yield Promise.all(event.connectedProviders.map((eventProvider) => __awaiter(void 0, void 0, void 0, function* () {
+        var _a, _b;
         const provider = yield db_1.db.provider.get(app.id, eventProvider.providerName);
         if (!provider)
             return;
+        const providerTemplate = template[provider.channel];
+        const parsedMsg = handlebars_1.default.compile((_a = providerTemplate === null || providerTemplate === void 0 ? void 0 : providerTemplate.message) !== null && _a !== void 0 ? _a : '');
+        const message = parsedMsg(data);
+        const parsedSubject = handlebars_1.default.compile((_b = providerTemplate === null || providerTemplate === void 0 ? void 0 : providerTemplate.subject) !== null && _b !== void 0 ? _b : '');
+        const subject = parsedSubject(data);
+        const parsedData = {
+            message: message,
+            subject: subject,
+        };
         try {
             yield providerAPI.send({
                 app: app,
