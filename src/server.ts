@@ -14,6 +14,7 @@ import { RabbitMqConnection } from './rabbitmq';
 import { Message } from 'amqplib';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import { Channel } from '@prisma/client';
 
 const app = express();
 const port = 3000;
@@ -62,7 +63,6 @@ app.use(webhookRoutes);
 
 app.listen(port, async () => {
   console.log(`Near notification platform is running on port ${port}.`);
-
   const rabbitMqConnection = new RabbitMqConnection();
   await rabbitMqConnection.setUp();
   await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {

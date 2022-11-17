@@ -18,14 +18,14 @@ const connectSchema = Joi.object({
   appName: Joi.string().required(),
   ownerAddress: Joi.string().required(),
   eventName: Joi.string().required(),
-  providerName: Joi.string().required(),
+  providerName: Joi.array().items(Joi.string()),
 });
 
 type CreateEventRequestBody = {
   readonly appName: string;
   readonly ownerAddress: string;
   readonly eventName: string;
-  readonly template: Record<string, string>;
+  readonly template: Record<string, Record<string, string>>;
   readonly metadata?: Record<string, string>;
 };
 
@@ -33,7 +33,7 @@ type ConnectEventRequestBody = {
   readonly appName: string;
   readonly ownerAddress: string;
   readonly eventName: string;
-  readonly providerName: string;
+  readonly providerName: string[];
 };
 
 const createEvent = async ({ body, ownerAddress }: Request, res: Response) => {
@@ -101,11 +101,31 @@ const connectProvider = async ({ body, ownerAddress }: Request, res: Response) =
     );
     if (payload === undefined) return;
     const app = await appExists(payload.appName, payload.ownerAddress);
-    await providerExists(app.id, payload.providerName);
     await eventExists(app.id, payload.eventName);
 
-    const updatedData = await db.event.connectProvider(app.id, payload.eventName, payload.providerName);
-    return res.status(200).send(updatedData);
+    let failedConnect: string[] = [];
+    let successConnect: string[] = [];
+
+    await Promise.all(
+      payload.providerName.map(async (pName) => {
+        const provider = await db.provider.get(app.id, pName);
+        if (!provider) {
+          failedConnect.push(pName);
+          return;
+        }
+        await db.event.connectProvider(app.id, payload.eventName, pName);
+        successConnect.push(pName);
+      }),
+    );
+
+    return res.status(200).send({
+      appName: payload.appName,
+      eventName: payload.eventName,
+      requestedConnect: payload.providerName,
+      successConnect: successConnect,
+      failedConnect: failedConnect,
+      failedCount: failedConnect.length,
+    });
   } catch (err) {
     return handleError(err, res);
   }
@@ -119,11 +139,31 @@ const disconnectProvider = async ({ body, ownerAddress }: Request, res: Response
     );
     if (payload === undefined) return;
     const app = await appExists(payload.appName, payload.ownerAddress);
-    await providerExists(app.id, payload.providerName);
     await eventExists(app.id, payload.eventName);
 
-    await db.event.disconnectProvider(app.id, payload.eventName, payload.providerName);
-    return res.sendStatus(200);
+    let failedDisconnect: string[] = [];
+    let successDisconnect: string[] = [];
+
+    await Promise.all(
+      payload.providerName.map(async (pName) => {
+        const provider = await db.provider.get(app.id, pName);
+        if (!provider) {
+          failedDisconnect.push(pName);
+          return;
+        }
+        await db.event.disconnectProvider(app.id, payload.eventName, pName);
+        successDisconnect.push(pName);
+      }),
+    );
+
+    return res.status(200).send({
+      appName: payload.appName,
+      eventName: payload.eventName,
+      requestedConnect: payload.providerName,
+      successDisconnect: successDisconnect,
+      failedDisconnect: failedDisconnect,
+      failedCount: failedDisconnect.length,
+    });
   } catch (err) {
     return handleError(err, res);
   }

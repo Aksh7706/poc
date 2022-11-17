@@ -1,3 +1,4 @@
+import { Channel } from '@prisma/client';
 import express, { Request, Response } from 'express';
 import Handlebars from 'handlebars';
 import Joi from 'joi';
@@ -31,18 +32,7 @@ export const sendEventHelper = async ({ appName, eventName, userWalletAddress, d
   const app = await appExists(appName, ownerAddress);
   const event = await eventExists(app.id, eventName);
   const user = await userExists(app.id, userWalletAddress);
-  const template = event.template as Record<string, string>;
-
-  const parsedMsg = Handlebars.compile(template?.message ?? '');
-  const message = parsedMsg(data);
-
-  const parsedSubject = Handlebars.compile(template?.subject ?? '');
-  const subject = parsedSubject(data);
-
-  const parsedData: SendEventArgsData = {
-    message: message,
-    subject: subject,
-  };
+  const template = event.template as Record<string, Record<string,string>>;
 
   let failedNotifications = 0;
 
@@ -50,6 +40,20 @@ export const sendEventHelper = async ({ appName, eventName, userWalletAddress, d
     event.connectedProviders.map(async (eventProvider) => {
       const provider = await db.provider.get(app.id, eventProvider.providerName);
       if (!provider) return;
+
+      const providerTemplate = template[provider.channel];
+
+      const parsedMsg = Handlebars.compile(providerTemplate?.message ?? '');
+      const message = parsedMsg(data);
+    
+      const parsedSubject = Handlebars.compile(providerTemplate?.subject ?? '');
+      const subject = parsedSubject(data);
+    
+      const parsedData: SendEventArgsData = {
+        message: message,
+        subject: subject,
+      };
+
       try {
         await providerAPI.send({
           app: app,
