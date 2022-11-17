@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
+const helper_1 = require("../helper");
 const authValidation_1 = require("../middleware/authValidation");
 const router = express_1.default.Router();
 const getAllApps = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -30,6 +31,18 @@ const createApp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     });
     return res.status(200).send(app);
 });
+const updateApp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (!req.body.appName || !req.body.updatedAppName)
+        return res.status(400).json({ reason: 'INVALID_PAYLOAD', explanation: 'name can not be undefined' });
+    try {
+        yield (0, helper_1.checkUniqueApp)(req.body.updatedAppName, req.ownerAddress);
+        const app = yield db_1.db.app.update(req.body.appName, req.ownerAddress, { name: req.body.updatedAppName });
+        return res.status(200).send(app);
+    }
+    catch (err) {
+        return (0, helper_1.handleError)(err, res);
+    }
+});
 const getApp = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!body.appName)
         return res.status(400).json({ reason: 'INVALID_PAYLOAD', explanation: 'name can not be undefined' });
@@ -44,6 +57,7 @@ const deleteApp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 });
 router.get('/getAll', authValidation_1.authValidation, getAllApps);
 router.post('/get', authValidation_1.authValidation, getApp);
+router.post('/update', authValidation_1.authValidation, updateApp);
 router.post('/create', authValidation_1.authValidation, createApp);
 router.post('/delete', authValidation_1.authValidation, deleteApp);
 exports.default = router;

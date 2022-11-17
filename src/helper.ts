@@ -17,6 +17,11 @@ export const appExists = async (appName: string, ownerAddress: string) => {
   return app;
 };
 
+export const checkUniqueApp = async (appName: string, ownerAddress: string) => {
+  const app = await db.app.get(appName, ownerAddress);
+  if (app) throw new ErrorInvalidArg('App with this name already exist');
+};
+
 export const providerExists = async (appId: string, providerName: string) => {
   const provider = await db.provider.get(appId, providerName);
   if (!provider) throw new ErrorInvalidArg('Provider does not exist');
@@ -29,7 +34,7 @@ export const eventExists = async (appId: string, eventName: string) => {
   return event;
 };
 
-export const userExists =  async (appId: string, walletAddress: string) => {
+export const userExists = async (appId: string, walletAddress: string) => {
   const user = await db.user.get(appId, walletAddress);
   if (!user) throw new ErrorInvalidArg('No such user exist in this app');
   return user;

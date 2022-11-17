@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logEvent = exports.handleError = exports.validatePayload = exports.checkUniqueEvent = exports.checkUniqueProvider = exports.userExists = exports.eventExists = exports.providerExists = exports.appExists = exports.accountExists = void 0;
+exports.logEvent = exports.handleError = exports.validatePayload = exports.checkUniqueEvent = exports.checkUniqueProvider = exports.userExists = exports.eventExists = exports.providerExists = exports.checkUniqueApp = exports.appExists = exports.accountExists = void 0;
 const db_1 = require("./db/db");
 const types_1 = require("./types");
 const axios_1 = require("axios");
@@ -27,6 +27,12 @@ const appExists = (appName, ownerAddress) => __awaiter(void 0, void 0, void 0, f
     return app;
 });
 exports.appExists = appExists;
+const checkUniqueApp = (appName, ownerAddress) => __awaiter(void 0, void 0, void 0, function* () {
+    const app = yield db_1.db.app.get(appName, ownerAddress);
+    if (app)
+        throw new types_1.ErrorInvalidArg('App with this name already exist');
+});
+exports.checkUniqueApp = checkUniqueApp;
 const providerExists = (appId, providerName) => __awaiter(void 0, void 0, void 0, function* () {
     const provider = yield db_1.db.provider.get(appId, providerName);
     if (!provider)
