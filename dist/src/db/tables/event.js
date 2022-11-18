@@ -97,6 +97,16 @@ class EventDB {
             return connectedProvider;
         });
     }
+    disconnectAllProvider(appId, eventName) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.prisma.eventProviders.deleteMany({
+                where: {
+                    appId: appId,
+                    eventName: eventName,
+                },
+            });
+        });
+    }
     disconnectProvider(appId, eventName, providerName) {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.prisma.eventProviders.deleteMany({
