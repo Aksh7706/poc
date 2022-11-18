@@ -34,7 +34,7 @@ export class EventDB {
     return event;
   }
 
-  async create(appId: string, args: createEventArgs): Promise<Event> {
+  async create(appId: string, args: createEventArgs) {
     const event = await this.prisma.event.create({
       data: {
         appId: appId,
@@ -48,7 +48,7 @@ export class EventDB {
     return event;
   }
 
-  async update(appId: string, eventName: string, args: updateEventArgs): Promise<Event> {
+  async update(appId: string, eventName: string, args: updateEventArgs) {
     const event = await this.prisma.event.upsert({
       where: {
         name_appId: {
