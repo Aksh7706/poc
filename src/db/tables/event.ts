@@ -94,6 +94,15 @@ export class EventDB {
     return connectedProvider;
   }
 
+  async disconnectAllProvider(appId: string, eventName: string) {
+    await this.prisma.eventProviders.deleteMany({
+      where: {
+        appId: appId,
+        eventName: eventName,
+      },
+    });
+  }
+
   async disconnectProvider(appId: string, eventName: string, providerName: string) {
     await this.prisma.eventProviders.deleteMany({
       where: {
