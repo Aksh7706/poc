@@ -68,7 +68,7 @@ const setUpAccount = async (req: Request, res: Response) => {
   return res.status(200).send(account);
 };
 
-router.get('/', authValidation, getAccount);
+router.get('/', authValidation,  getAccount);
 router.post('/update', authValidation, updateAccount);
 router.get('/delete', authValidation, deleteAccount);
 router.get('/setup', authValidation, setUpAccount);
