@@ -2,7 +2,7 @@ import { Channel } from '@prisma/client';
 import express, { Request, Response } from 'express';
 import Handlebars from 'handlebars';
 import Joi from 'joi';
-import { db } from '../db/db';
+import { db, prismaClient } from '../db/db';
 import { accountExists, appExists, eventExists, handleError, logEvent, userExists, validatePayload } from '../helper';
 import { authValidation, omniAuthValidation } from '../middleware/authValidation';
 import { Provider } from '../providers/provider';
@@ -23,15 +23,16 @@ const sendSchema = Joi.object({
   eventName: Joi.string().required(),
   ownerAddress: Joi.string().required(),
   userWalletAddress: Joi.string().required(),
+  txHash: Joi.string().optional(),
   data: Joi.object().optional(),
 });
 
 export const sendEventHelper = async ({ appName, eventName, userWalletAddress, data, ownerAddress }: sendEventArgs) => {
-  const providerAPI = new Provider();
+  const providerAPI = new Provider(prismaClient);
 
   const app = await appExists(appName, ownerAddress);
-  const event = await eventExists(app.id, eventName);
   const user = await userExists(app.id, userWalletAddress);
+  const event = await eventExists(app.id, eventName);
   const template = event.template as Record<string, Record<string,string>>;
 
   let failedNotifications = 0;
@@ -74,10 +75,18 @@ export const sendEventHelper = async ({ appName, eventName, userWalletAddress, d
     throw new ErrorGeneric({ reason: 'FAILURE', explanation: `${failedNotifications} notifications failed to send.` });
 };
 
-export const sendEventFromApiKey = async (args: any) => {
+export const sendEventFromParser = async (args: any) => {
   try {
-    if (!args?.apiKey) return; // No Api key
-    const account = await accountExists(args.apiKey);
+    let account;
+
+    if (args?.apiKey) {
+      account = await accountExists(args.apiKey);
+    }
+
+    if(args?.contractAddress){
+      account = await db.account.getByContractAddress(args.contractAddress)
+    }
+    
     if (!account) return; // Account does not exist
 
     const payload: sendEventArgs | undefined = validatePayload(

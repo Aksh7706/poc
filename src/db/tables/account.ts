@@ -40,17 +40,23 @@ export class AccountDB {
     return app;
   }
 
-  async create({ ownerAddress, name }: createAccountArgs) {
+  async getByContractAddress(contractAddress: string) {
+    const app = await this.prisma.account.findUnique({
+      where: {
+        contractAddress: contractAddress,
+      },
+    });
+
+    return app;
+  }
+
+  async create({ ownerAddress, name, contractAddress }: createAccountArgs) {
     const account = await this.prisma.account.create({
       data: {
         ownerAddress: ownerAddress,
         apiKey: generateApiKey({ method: 'string', length: 30 }) as string,
         name: name,
-        App: {
-          create: {
-            name: "My Demo App",
-          }
-        }
+        contractAddress: contractAddress
       },
       include: {
         App: true,
@@ -60,15 +66,17 @@ export class AccountDB {
     return account;
   }
 
-  async update(ownerAddress: string, { name }: updateAccountArgs) {
+  async update(ownerAddress: string, { name, contractAddress }: updateAccountArgs) {
     const app = await this.prisma.account.upsert({
       where: {
         ownerAddress: ownerAddress,
       },
       update: {
         name: name,
+        contractAddress: contractAddress,
       },
       create: {
+        contractAddress: ownerAddress,
         name: name,
         apiKey: generateApiKey({ method: 'string', length: 30 }) as string,
         ownerAddress: ownerAddress,

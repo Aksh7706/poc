@@ -5,7 +5,11 @@ import { SendGridMail } from './mail/sendgrid-mail';
 import { Telegram } from './other/telegram';
 
 export class Provider {
-  prisma = new PrismaClient();
+  prisma : PrismaClient;
+
+  constructor(prisma: PrismaClient) {
+    this.prisma = prisma;
+  }
 
   async setupProvider(args: SetupProviderArgs) {
     // add cases here

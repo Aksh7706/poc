@@ -9,7 +9,7 @@ import webhookRoutes from './routes/webhook';
 import authRoutes from './routes/auth';
 import notificationRoutes from './routes/notifications';
 import userRoutes from './routes/user';
-import sendRoutes, { sendEventArgs, sendEventFromApiKey } from './routes/send';
+import sendRoutes, { sendEventArgs, sendEventFromParser } from './routes/send';
 import { RabbitMqConnection } from './rabbitmq';
 import { Message } from 'amqplib';
 import cookieParser from 'cookie-parser';
@@ -46,7 +46,7 @@ app.use(cookieParser());
 //   res.sendFile(path.join(__dirname,'../../src', 'static', 'provider', req.params.imageName))
 // });
 
-app.use('/images', express.static(path.join(__dirname, '../../src', 'static', 'provider')))
+app.use('/images', express.static(path.join(__dirname, '../../src', 'static', 'provider')));
 
 setUpSecurityHeaders(app);
 setUpParsing(app);
@@ -65,11 +65,12 @@ app.listen(port, async () => {
   console.log(`Near notification platform is running on port ${port}.`);
   const rabbitMqConnection = new RabbitMqConnection();
   await rabbitMqConnection.setUp();
+
   await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {
     if (msg?.content) {
-      const sendParams = JSON.parse(msg?.content.toString()) as sendEventArgs;
-      await sendEventFromApiKey(sendParams);
+      const sendParams = JSON.parse(msg?.content.toString());
+      await sendEventFromParser(sendParams);
     }
     rabbitMqConnection.channel.ack(msg as Message);
-  });
+  })
 });

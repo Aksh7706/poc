@@ -11,17 +11,19 @@ datasource db {
 }
 
 model Account {
-  id           String @id @default(uuid())
-  name         String
-  apiKey       String @unique @map("api_key")
-  ownerAddress String @unique @map("owner_address")
-  App          App[]
+  id              String @id @default(uuid())
+  name            String
+  apiKey          String @unique @map("api_key")
+  contractAddress String @unique @map("contract_address") @default(uuid())
+  ownerAddress    String @unique @map("owner_address")
+  App             App[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([apiKey])
   @@index([ownerAddress])
+  @@index([contractAddress])
 }
 
 model App {

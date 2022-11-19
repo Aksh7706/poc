@@ -1,6 +1,6 @@
 import { Channel, ProviderKey } from '@prisma/client';
 import express, { Request, Response } from 'express';
-import { db } from '../db/db';
+import { db, prismaClient } from '../db/db';
 import { Provider } from '../providers/provider';
 import Joi from 'joi';
 import { appExists, checkUniqueProvider, handleError, providerExists, validatePayload } from '../helper';
@@ -39,7 +39,7 @@ const createProvider = async ({ body, ownerAddress }: Request, res: Response) =>
     const app = await appExists(payload.appName, ownerAddress!);
     await checkUniqueProvider(app.id, payload.providerName);
 
-    const providerApi = new Provider();
+    const providerApi = new Provider(prismaClient);
     await providerApi.setupProvider({
       appId: app.id,
       providerName: payload.providerName,
@@ -89,7 +89,7 @@ const deleteProvider = async ({ body, ownerAddress }: Request, res: Response) =>
   try {
     const app = await appExists(body.appName, ownerAddress!);
     const provider = await providerExists(app.id, body.providerName);
-    const providerApi = new Provider();
+    const providerApi = new Provider(prismaClient);
 
     await providerApi.removeProvider({
       appId: app.id,

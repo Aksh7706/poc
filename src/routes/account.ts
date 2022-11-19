@@ -13,10 +13,13 @@ const getAccount = async (req: Request, res: Response) => {
 };
 
 const updateAccount = async (req: Request, res: Response) => {
-  if (!req.ownerAddress || !req.body.accountName)
+  if (!req.ownerAddress || !req.body.accountName || !req.body.contractAddress)
     return res.status(400).json({ reason: 'INVALID_PAYLOAD', explanation: 'Something went wrong.' });
 
-  const account = await db.account.update(req.ownerAddress, { name: req.body.accountName });
+  const account = await db.account.update(req.ownerAddress, {
+    name: req.body.accountName,
+    contractAddress: req.body.contractAddress,
+  });
   return res.status(200).send(account);
 };
 
@@ -29,7 +32,7 @@ const deleteAccount = async (req: Request, res: Response) => {
 };
 
 router.get('/', authValidation, getAccount);
-router.get('/update', authValidation, updateAccount);
+router.post('/update', authValidation, updateAccount);
 router.get('/delete', authValidation, deleteAccount);
 
 export default router;

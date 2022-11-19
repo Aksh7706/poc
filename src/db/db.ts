@@ -22,5 +22,17 @@ class DB {
   }
 }
 
-const prisma = new PrismaClient();
-export const db = new DB(prisma);
+class PrismaHelper {
+  public static Prisma: PrismaClient;
+
+  static getPrisma() {
+    //verify if prisma instance not exist
+    if (this.Prisma === null || !this.Prisma)
+      //create new one
+      this.Prisma = new PrismaClient();
+    return this.Prisma;
+  }
+}
+
+export const prismaClient = PrismaHelper.getPrisma();
+export const db = new DB(prismaClient);
