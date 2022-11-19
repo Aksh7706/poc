@@ -14,7 +14,6 @@ import { RabbitMqConnection } from './rabbitmq';
 import { Message } from 'amqplib';
 import cookieParser from 'cookie-parser';
 import path from 'path';
-import { Channel } from '@prisma/client';
 
 const app = express();
 const port = 3000;
@@ -65,12 +64,15 @@ app.listen(port, async () => {
   console.log(`Near notification platform is running on port ${port}.`);
   const rabbitMqConnection = new RabbitMqConnection();
   await rabbitMqConnection.setUp();
-
-  await rabbitMqConnection.channel.consume('nnp-msg-queue', async (msg) => {
+  //let i =0;
+  await rabbitMqConnection.channel.consume('nnp-msg-queue', (msg) => {
     if (msg?.content) {
+      //console.log("Count", i++)
       const sendParams = JSON.parse(msg?.content.toString());
-      await sendEventFromParser(sendParams);
+      sendEventFromParser(sendParams).then(e => {
+        rabbitMqConnection.channel.ack(msg as Message);
+        //console.log("Count Ack")
+      }).catch(e => {});
     }
-    rabbitMqConnection.channel.ack(msg as Message);
   })
 });

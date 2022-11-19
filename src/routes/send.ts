@@ -83,7 +83,7 @@ export const sendEventFromParser = async (args: any) => {
       account = await accountExists(args.apiKey);
     }
 
-    if(args?.contractAddress){
+    if(!account && args?.contractAddress){
       account = await db.account.getByContractAddress(args.contractAddress)
     }
     

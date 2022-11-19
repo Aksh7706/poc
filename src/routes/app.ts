@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { db } from '../db/db';
-import { checkUniqueApp, handleError } from '../helper';
+import { generateProject } from '../generator';
+import { accountExists, checkUniqueApp, handleError } from '../helper';
 import { authValidation } from '../middleware/authValidation';
 
 const router = express.Router();
@@ -14,13 +15,19 @@ const createApp = async (req: Request, res: Response) => {
   if (!req.body.appName)
     return res.status(400).json({ reason: 'INVALID_PAYLOAD', explanation: 'name can not be undefined' });
 
-  const app = await db.app.create({
-    name: req.body.appName,
-    description: req.body.description,
-    ownerAddress: req.ownerAddress!,
-  });
-
-  return res.status(200).send(app);
+  try {
+    await checkUniqueApp(req.body.appName, req.ownerAddress!);
+    const account = await db.account.get(req.ownerAddress!);
+    const app = await db.app.create({
+      name: req.body.appName,
+      description: req.body.description,
+      ownerAddress: req.ownerAddress!,
+    });
+    await generateProject(req.body.appName, account?.contractAddress ?? '');
+    return res.status(200).send(app);
+  } catch (err) {
+    return handleError(err, res);
+  }
 };
 
 const updateApp = async (req: Request, res: Response) => {
