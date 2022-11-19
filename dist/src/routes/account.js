@@ -72,5 +72,5 @@ const setUpAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 router.get('/', authValidation_1.authValidation, getAccount);
 router.post('/update', authValidation_1.authValidation, updateAccount);
 router.get('/delete', authValidation_1.authValidation, deleteAccount);
-router.get('/setup', authValidation_1.authValidation, setUpAccount);
+router.post('/setup', authValidation_1.authValidation, setUpAccount);
 exports.default = router;

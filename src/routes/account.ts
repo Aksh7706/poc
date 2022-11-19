@@ -71,6 +71,6 @@ const setUpAccount = async (req: Request, res: Response) => {
 router.get('/', authValidation,  getAccount);
 router.post('/update', authValidation, updateAccount);
 router.get('/delete', authValidation, deleteAccount);
-router.get('/setup', authValidation, setUpAccount);
+router.post('/setup', authValidation, setUpAccount);
 
 export default router;
