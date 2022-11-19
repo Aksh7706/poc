@@ -42,7 +42,7 @@ const createProvider = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0
         // app exists
         const app = yield (0, helper_1.appExists)(payload.appName, ownerAddress);
         yield (0, helper_1.checkUniqueProvider)(app.id, payload.providerName);
-        const providerApi = new provider_1.Provider();
+        const providerApi = new provider_1.Provider(db_1.prismaClient);
         yield providerApi.setupProvider({
             appId: app.id,
             providerName: payload.providerName,
@@ -93,7 +93,7 @@ const deleteProvider = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0
     try {
         const app = yield (0, helper_1.appExists)(body.appName, ownerAddress);
         const provider = yield (0, helper_1.providerExists)(app.id, body.providerName);
-        const providerApi = new provider_1.Provider();
+        const providerApi = new provider_1.Provider(db_1.prismaClient);
         yield providerApi.removeProvider({
             appId: app.id,
             channel: provider.channel,

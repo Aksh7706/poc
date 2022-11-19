@@ -25,13 +25,11 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         account = yield db_1.db.account.create({
             ownerAddress: ownerAddress,
             name: '',
+            contractAddress: req.body.ownerAddress,
         });
     }
     const token = jsonwebtoken_1.default.sign({ ownerAddress: ownerAddress }, 'YOUR_SECRET_KEY', { expiresIn: '365d' });
-    return res
-        .cookie('access_token', token, { sameSite: 'none', secure: true })
-        .status(200)
-        .send(account);
+    return res.cookie('access_token', token, { sameSite: 'none', secure: true }).status(200).send(account);
 });
 const logout = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     return res.clearCookie('access_token').sendStatus(200);

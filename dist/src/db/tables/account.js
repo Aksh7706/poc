@@ -50,18 +50,24 @@ class AccountDB {
             return app;
         });
     }
-    create({ ownerAddress, name }) {
+    getByContractAddress(contractAddress) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const app = yield this.prisma.account.findUnique({
+                where: {
+                    contractAddress: contractAddress,
+                },
+            });
+            return app;
+        });
+    }
+    create({ ownerAddress, name, contractAddress }) {
         return __awaiter(this, void 0, void 0, function* () {
             const account = yield this.prisma.account.create({
                 data: {
                     ownerAddress: ownerAddress,
                     apiKey: (0, generate_api_key_1.default)({ method: 'string', length: 30 }),
                     name: name,
-                    App: {
-                        create: {
-                            name: "My Demo App",
-                        }
-                    }
+                    contractAddress: contractAddress
                 },
                 include: {
                     App: true,
@@ -70,7 +76,7 @@ class AccountDB {
             return account;
         });
     }
-    update(ownerAddress, { name }) {
+    update(ownerAddress, { name, contractAddress }) {
         return __awaiter(this, void 0, void 0, function* () {
             const app = yield this.prisma.account.upsert({
                 where: {
@@ -78,8 +84,10 @@ class AccountDB {
                 },
                 update: {
                     name: name,
+                    contractAddress: contractAddress,
                 },
                 create: {
+                    contractAddress: ownerAddress,
                     name: name,
                     apiKey: (0, generate_api_key_1.default)({ method: 'string', length: 30 }),
                     ownerAddress: ownerAddress,

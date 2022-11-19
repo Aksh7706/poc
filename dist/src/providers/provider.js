@@ -10,13 +10,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Provider = void 0;
-const client_1 = require("@prisma/client");
 const pegion_1 = require("./inapp/pegion");
 const sendgrid_mail_1 = require("./mail/sendgrid-mail");
 const telegram_1 = require("./other/telegram");
 class Provider {
-    constructor() {
-        this.prisma = new client_1.PrismaClient();
+    constructor(prisma) {
+        this.prisma = prisma;
     }
     setupProvider(args) {
         return __awaiter(this, void 0, void 0, function* () {

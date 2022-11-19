@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEventFromApiKey = exports.sendEventHelper = void 0;
+exports.sendEventFromParser = exports.sendEventHelper = void 0;
 const express_1 = __importDefault(require("express"));
 const handlebars_1 = __importDefault(require("handlebars"));
 const joi_1 = __importDefault(require("joi"));
@@ -27,13 +27,14 @@ const sendSchema = joi_1.default.object({
     eventName: joi_1.default.string().required(),
     ownerAddress: joi_1.default.string().required(),
     userWalletAddress: joi_1.default.string().required(),
+    txHash: joi_1.default.string().optional(),
     data: joi_1.default.object().optional(),
 });
 const sendEventHelper = ({ appName, eventName, userWalletAddress, data, ownerAddress }) => __awaiter(void 0, void 0, void 0, function* () {
-    const providerAPI = new provider_1.Provider();
+    const providerAPI = new provider_1.Provider(db_1.prismaClient);
     const app = yield (0, helper_1.appExists)(appName, ownerAddress);
-    const event = yield (0, helper_1.eventExists)(app.id, eventName);
     const user = yield (0, helper_1.userExists)(app.id, userWalletAddress);
+    const event = yield (0, helper_1.eventExists)(app.id, eventName);
     const template = event.template;
     let failedNotifications = 0;
     yield Promise.all(event.connectedProviders.map((eventProvider) => __awaiter(void 0, void 0, void 0, function* () {
@@ -69,11 +70,15 @@ const sendEventHelper = ({ appName, eventName, userWalletAddress, data, ownerAdd
         throw new types_1.ErrorGeneric({ reason: 'FAILURE', explanation: `${failedNotifications} notifications failed to send.` });
 });
 exports.sendEventHelper = sendEventHelper;
-const sendEventFromApiKey = (args) => __awaiter(void 0, void 0, void 0, function* () {
+const sendEventFromParser = (args) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        if (!(args === null || args === void 0 ? void 0 : args.apiKey))
-            return; // No Api key
-        const account = yield (0, helper_1.accountExists)(args.apiKey);
+        let account;
+        if (args === null || args === void 0 ? void 0 : args.apiKey) {
+            account = yield (0, helper_1.accountExists)(args.apiKey);
+        }
+        if (!account && (args === null || args === void 0 ? void 0 : args.contractAddress)) {
+            account = yield db_1.db.account.getByContractAddress(args.contractAddress);
+        }
         if (!account)
             return; // Account does not exist
         const payload = (0, helper_1.validatePayload)({
@@ -93,7 +98,7 @@ const sendEventFromApiKey = (args) => __awaiter(void 0, void 0, void 0, function
         }
     }
 });
-exports.sendEventFromApiKey = sendEventFromApiKey;
+exports.sendEventFromParser = sendEventFromParser;
 const sendEvent = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const payload = (0, helper_1.validatePayload)(Object.assign({ ownerAddress: ownerAddress }, body), sendSchema);

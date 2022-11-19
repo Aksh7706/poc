@@ -86,11 +86,15 @@ app.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`Near notification platform is running on port ${port}.`);
     const rabbitMqConnection = new rabbitmq_1.RabbitMqConnection();
     yield rabbitMqConnection.setUp();
-    yield rabbitMqConnection.channel.consume('nnp-msg-queue', (msg) => __awaiter(void 0, void 0, void 0, function* () {
+    //let i =0;
+    yield rabbitMqConnection.channel.consume('nnp-msg-queue', (msg) => {
         if (msg === null || msg === void 0 ? void 0 : msg.content) {
+            //console.log("Count", i++)
             const sendParams = JSON.parse(msg === null || msg === void 0 ? void 0 : msg.content.toString());
-            yield (0, send_1.sendEventFromApiKey)(sendParams);
+            (0, send_1.sendEventFromParser)(sendParams).then(e => {
+                rabbitMqConnection.channel.ack(msg);
+                //console.log("Count Ack")
+            }).catch(e => { });
         }
-        rabbitMqConnection.channel.ack(msg);
-    }));
+    });
 }));

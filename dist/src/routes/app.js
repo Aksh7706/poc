@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
+const generator_1 = require("../generator");
 const helper_1 = require("../helper");
 const authValidation_1 = require("../middleware/authValidation");
 const router = express_1.default.Router();
@@ -22,14 +23,23 @@ const getAllApps = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     return res.status(200).send(app);
 });
 const createApp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     if (!req.body.appName)
         return res.status(400).json({ reason: 'INVALID_PAYLOAD', explanation: 'name can not be undefined' });
-    const app = yield db_1.db.app.create({
-        name: req.body.appName,
-        description: req.body.description,
-        ownerAddress: req.ownerAddress,
-    });
-    return res.status(200).send(app);
+    try {
+        yield (0, helper_1.checkUniqueApp)(req.body.appName, req.ownerAddress);
+        const account = yield db_1.db.account.get(req.ownerAddress);
+        const app = yield db_1.db.app.create({
+            name: req.body.appName,
+            description: req.body.description,
+            ownerAddress: req.ownerAddress,
+        });
+        yield (0, generator_1.generateProject)(req.body.appName, (_a = account === null || account === void 0 ? void 0 : account.contractAddress) !== null && _a !== void 0 ? _a : '');
+        return res.status(200).send(app);
+    }
+    catch (err) {
+        return (0, helper_1.handleError)(err, res);
+    }
 });
 const updateApp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.body.appName || !req.body.updatedAppName)
