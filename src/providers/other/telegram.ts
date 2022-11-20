@@ -29,7 +29,7 @@ export class Telegram {
 
     const params = {
       chat_id: chatId,
-      text: data.message,
+      text: encodeURIComponent(data.message),
       parse_mode: "MarkdownV2"
     };
 
@@ -37,6 +37,7 @@ export class Telegram {
 
     await axios.get(methodEndpoint, { params }).catch(e => {
       console.log("Telegram Send Error : ", e)
+      throw e
     });
     //console.log(data);
   }

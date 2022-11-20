@@ -31,12 +31,13 @@ class Telegram {
         }
         const params = {
             chat_id: chatId,
-            text: data.message,
+            text: encodeURIComponent(data.message),
             parse_mode: "MarkdownV2"
         };
         const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
         await axios_1.default.get(methodEndpoint, { params }).catch(e => {
             console.log("Telegram Send Error : ", e);
+            throw e;
         });
         //console.log(data);
     }
