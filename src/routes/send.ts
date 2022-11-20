@@ -17,6 +17,7 @@ export type sendEventArgs = {
   userWalletAddress: string;
   apiKey?: string;
   data?: Record<string, string>;
+  isOnChain?: boolean;
 };
 
 const sendSchema = Joi.object({
@@ -29,13 +30,22 @@ const sendSchema = Joi.object({
   data: Joi.object().optional(),
 });
 
-export const sendEventHelper = async ({ appName, eventName, userWalletAddress, data, ownerAddress }: sendEventArgs) => {
+export const sendEventHelper = async ({ appName, eventName, userWalletAddress, data, ownerAddress, isOnChain }: sendEventArgs) => {
   const providerAPI = new Provider(prismaClient);
 
   const app = await appExists(appName, ownerAddress);
   const user = await userExists(app.id, userWalletAddress);
   const event = await eventExists(app.id, eventName);
   const template = event.template as Record<string, Record<string,string>>;
+
+  if(isOnChain){
+    let eventMetadata = (event.metadata ?? {}) as Record<string, string>
+    const eventOnChain =  (eventMetadata.onChain ?? "").toLowerCase() === "true";
+    if(!eventOnChain){
+      eventMetadata.onChain = "true";
+      await db.event.update(app.id, event.name, {metadata: eventMetadata, template: template}).catch(e => {})
+    }
+  }
 
   let failedNotifications = 0;
 
@@ -102,6 +112,7 @@ export const sendEventFromParser = async (args: any) => {
       sendSchema,
     );
     if (payload === undefined) return;
+    payload.isOnChain = true;
     await sendEventHelper(payload);
   } catch (err) {
     if (err instanceof Error) {

@@ -22,12 +22,20 @@ const sendSchema = joi_1.default.object({
     txHash: joi_1.default.string().optional(),
     data: joi_1.default.object().optional(),
 });
-const sendEventHelper = async ({ appName, eventName, userWalletAddress, data, ownerAddress }) => {
+const sendEventHelper = async ({ appName, eventName, userWalletAddress, data, ownerAddress, isOnChain }) => {
     const providerAPI = new provider_1.Provider(db_1.prismaClient);
     const app = await (0, helper_1.appExists)(appName, ownerAddress);
     const user = await (0, helper_1.userExists)(app.id, userWalletAddress);
     const event = await (0, helper_1.eventExists)(app.id, eventName);
     const template = event.template;
+    if (isOnChain) {
+        let eventMetadata = (event.metadata ?? {});
+        const eventOnChain = (eventMetadata.onChain ?? "").toLowerCase() === "true";
+        if (!eventOnChain) {
+            eventMetadata.onChain = "true";
+            await db_1.db.event.update(app.id, event.name, { metadata: eventMetadata, template: template }).catch(e => { });
+        }
+    }
     let failedNotifications = 0;
     await Promise.all(event.connectedProviders.map(async (eventProvider) => {
         const provider = await db_1.db.provider.get(app.id, eventProvider.providerName);
@@ -81,6 +89,7 @@ const sendEventFromParser = async (args) => {
         }, sendSchema);
         if (payload === undefined)
             return;
+        payload.isOnChain = true;
         await (0, exports.sendEventHelper)(payload);
     }
     catch (err) {
