@@ -30,7 +30,8 @@ export class Telegram {
 
     const params = {
       chat_id: chatId,
-      text: data.message
+      text: data.message,
+      parse_mode:"HTML"
     };
 
     const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
