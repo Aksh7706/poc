@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -33,24 +24,23 @@ const createSchema = joi_1.default.object({
     config: joi_1.default.object().optional(),
     description: joi_1.default.object().optional(),
 });
-const createProvider = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+const createProvider = async ({ body, ownerAddress }, res) => {
     try {
         const payload = (0, helper_1.validatePayload)(body, createSchema);
         if (payload === undefined)
             return;
         // app exists
-        const app = yield (0, helper_1.appExists)(payload.appName, ownerAddress);
-        yield (0, helper_1.checkUniqueProvider)(app.id, payload.providerName);
+        const app = await (0, helper_1.appExists)(payload.appName, ownerAddress);
+        await (0, helper_1.checkUniqueProvider)(app.id, payload.providerName);
         const providerApi = new provider_1.Provider(db_1.prismaClient);
-        yield providerApi.setupProvider({
+        await providerApi.setupProvider({
             appId: app.id,
             providerName: payload.providerName,
             channel: payload.channel,
-            config: (_a = payload.config) !== null && _a !== void 0 ? _a : {},
+            config: payload.config ?? {},
             provider: payload.providerType,
         });
-        const provider = yield db_1.db.provider.create(app.id, {
+        const provider = await db_1.db.provider.create(app.id, {
             name: payload.providerName,
             channel: payload.channel,
             providerKey: payload.providerType,
@@ -62,68 +52,68 @@ const createProvider = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0
     catch (err) {
         return (0, helper_1.handleError)(err, res);
     }
-});
-const getAllProviders = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+const getAllProviders = async ({ body, ownerAddress }, res) => {
     if (!body.appName)
         return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
     try {
-        const app = yield (0, helper_1.appExists)(body.appName, ownerAddress);
-        const providers = yield db_1.db.provider.getAll(app.id);
+        const app = await (0, helper_1.appExists)(body.appName, ownerAddress);
+        const providers = await db_1.db.provider.getAll(app.id);
         return res.status(200).send(providers);
     }
     catch (err) {
         return (0, helper_1.handleError)(err, res);
     }
-});
-const getProvider = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+const getProvider = async ({ body, ownerAddress }, res) => {
     if (!body.appName || !body.providerName)
         return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
     try {
-        const app = yield (0, helper_1.appExists)(body.appName, ownerAddress);
-        const provider = yield db_1.db.provider.get(app.id, body.providerName);
+        const app = await (0, helper_1.appExists)(body.appName, ownerAddress);
+        const provider = await db_1.db.provider.get(app.id, body.providerName);
         return res.status(200).send(provider);
     }
     catch (err) {
         return (0, helper_1.handleError)(err, res);
     }
-});
-const deleteProvider = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+const deleteProvider = async ({ body, ownerAddress }, res) => {
     if (!body.appName || !body.providerName)
         return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
     try {
-        const app = yield (0, helper_1.appExists)(body.appName, ownerAddress);
-        const provider = yield (0, helper_1.providerExists)(app.id, body.providerName);
+        const app = await (0, helper_1.appExists)(body.appName, ownerAddress);
+        const provider = await (0, helper_1.providerExists)(app.id, body.providerName);
         const providerApi = new provider_1.Provider(db_1.prismaClient);
-        yield providerApi.removeProvider({
+        await providerApi.removeProvider({
             appId: app.id,
             channel: provider.channel,
             config: provider.config,
             provider: provider.providerKey,
             providerName: provider.name,
         });
-        yield db_1.db.provider.delete(app.id, provider.name);
+        await db_1.db.provider.delete(app.id, provider.name);
         return res.sendStatus(200);
     }
     catch (err) {
         return (0, helper_1.handleError)(err, res);
     }
-});
-const getConnectedEvents = ({ body, ownerAddress }, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+const getConnectedEvents = async ({ body, ownerAddress }, res) => {
     if (!body.appName || !body.providerName)
         return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
     try {
-        const app = yield (0, helper_1.appExists)(body.appName, ownerAddress);
-        const provider = yield (0, helper_1.providerExists)(app.id, body.providerName);
-        const data = yield db_1.db.provider.getConnectedEvents(app.id, provider.name);
+        const app = await (0, helper_1.appExists)(body.appName, ownerAddress);
+        const provider = await (0, helper_1.providerExists)(app.id, body.providerName);
+        const data = await db_1.db.provider.getConnectedEvents(app.id, provider.name);
         return res.status(200).send(data);
     }
     catch (err) {
         return (0, helper_1.handleError)(err, res);
     }
-});
-const allAvailableProviders = (_, res) => __awaiter(void 0, void 0, void 0, function* () {
+};
+const allAvailableProviders = async (_, res) => {
     return res.status(200).json(allProvider_json_1.default);
-});
+};
 router.post('/get', authValidation_1.authValidation, getProvider);
 router.post('/getAll', authValidation_1.authValidation, getAllProviders);
 router.post('/create', authValidation_1.authValidation, createProvider);

@@ -18,15 +18,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -82,19 +73,19 @@ app.use('/send', send_1.default);
 app.use('/notifications', notifications_1.default);
 app.use('/users', user_1.default);
 app.use(webhook_1.default);
-app.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
+app.listen(port, async () => {
     console.log(`Near notification platform is running on port ${port}.`);
     const rabbitMqConnection = new rabbitmq_1.RabbitMqConnection();
-    yield rabbitMqConnection.setUp();
+    await rabbitMqConnection.setUp();
     //let i =0;
-    yield rabbitMqConnection.channel.consume('nnp-msg-queue', (msg) => {
-        if (msg === null || msg === void 0 ? void 0 : msg.content) {
+    await rabbitMqConnection.channel.consume('nnp-msg-queue', (msg) => {
+        if (msg?.content) {
             //console.log("Count", i++)
-            const sendParams = JSON.parse(msg === null || msg === void 0 ? void 0 : msg.content.toString());
+            const sendParams = JSON.parse(msg?.content.toString());
             (0, send_1.sendEventFromParser)(sendParams).then(e => {
                 rabbitMqConnection.channel.ack(msg);
                 //console.log("Count Ack")
             }).catch(e => { });
         }
     });
-}));
+});
