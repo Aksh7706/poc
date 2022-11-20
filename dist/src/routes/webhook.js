@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
+const telegram_1 = require("../providers/other/telegram");
 const base64_1 = require("../utils/base64");
 const router = express_1.default.Router();
 router.post('/webhook/:appId/:providerName', async ({ params, body }, res) => {
@@ -19,17 +20,17 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }, res) => {
     if (provider.providerKey !== 'TELEGRAM')
         return res.sendStatus(200); // TODO: Make hook more generalized
     const message = body?.message?.text ?? '';
-    console.log("Message : ", message);
+    console.log('Message : ', message);
     const msgArray = message.split(' ');
     const chatId = body?.message?.chat?.id;
-    console.log("Message Array:", msgArray);
+    console.log('Message Array:', msgArray);
     if (msgArray.length === 2 && msgArray[0] === '/start' && chatId) {
         const encodedWalletAddress = msgArray[1]; // TODO: add method to validate isWalletAddress
         if (!encodedWalletAddress)
             return res.sendStatus(200);
         try {
             const walletAddress = base64_1.Base64.decode(encodedWalletAddress);
-            console.log("Wallet Address : ", walletAddress);
+            console.log('Wallet Address : ', walletAddress);
             let user = await db_1.db.user.get(appId, walletAddress);
             if (!user) {
                 user = await db_1.db.user.create(appId, {
@@ -45,10 +46,12 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }, res) => {
             else {
                 user = await db_1.db.user.updateTelegramChatId(appId, walletAddress, providerName, chatId.toString());
             }
+            const telegramProvider = new telegram_1.Telegram();
+            await telegramProvider.sendWelcomeMessage(provider, chatId.toString(), app.name);
             console.log('User : ', user);
         }
         catch (e) {
-            console.log("Error telegram : ", e);
+            console.log('Error telegram : ', e);
         }
     }
     return res.sendStatus(200);

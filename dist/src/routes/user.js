@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
 const helper_1 = require("../helper");
 const authValidation_1 = require("../middleware/authValidation");
+const pegion_1 = require("../providers/inapp/pegion");
 const base64_1 = require("../utils/base64");
 const router = express_1.default.Router();
 const getAllUsers = async ({ body, ownerAddress }, res) => {
@@ -38,10 +39,15 @@ const upsertUser = async ({ body, ownerAddress }, res) => {
         return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
     try {
         const app = await (0, helper_1.appExists)(body.appName, ownerAddress);
+        const userCheck = await db_1.db.user.get(app.id, ownerAddress);
         const user = await db_1.db.user.update(app.id, body.walletAddress, {
             email: body.email,
             mobile: body.mobile,
         });
+        if (!userCheck) {
+            const pegionProvider = new pegion_1.Pigeon();
+            await pegionProvider.sendWelcomeMessage(app, body.walletAddress);
+        }
         return res.status(200).send(user);
     }
     catch (err) {
