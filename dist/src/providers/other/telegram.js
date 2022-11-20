@@ -35,7 +35,9 @@ class Telegram {
             parse_mode: "MarkdownV2"
         };
         const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
-        await axios_1.default.get(methodEndpoint, { params });
+        await axios_1.default.get(methodEndpoint, { params }).catch(e => {
+            console.log("Telegram Send Error : ", e);
+        });
         //console.log(data);
     }
     async setupProvider(appId, providerName, token) {
