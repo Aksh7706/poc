@@ -15,6 +15,7 @@ export type sendEventArgs = {
   eventName: string;
   ownerAddress: string;
   userWalletAddress: string;
+  apiKey?: string;
   data?: Record<string, string>;
 };
 
@@ -23,6 +24,7 @@ const sendSchema = Joi.object({
   eventName: Joi.string().required(),
   ownerAddress: Joi.string().required(),
   userWalletAddress: Joi.string().required(),
+  apiKey: Joi.string().optional(),
   txHash: Joi.string().optional(),
   data: Joi.object().optional(),
 });

@@ -18,6 +18,7 @@ const sendSchema = joi_1.default.object({
     eventName: joi_1.default.string().required(),
     ownerAddress: joi_1.default.string().required(),
     userWalletAddress: joi_1.default.string().required(),
+    apiKey: joi_1.default.string().optional(),
     txHash: joi_1.default.string().optional(),
     data: joi_1.default.object().optional(),
 });
