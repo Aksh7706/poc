@@ -47,7 +47,7 @@ const getTelegramInvite = async ({ body }: Request, res: Response) => {
   if (!body.botUserName || !body.walletAddress) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
     const inviteLink = `https://telegram.me/${body.botUserName}?start=${Base64.encode(body.walletAddress)}`;
-    return res.sendStatus(200).send({
+    return res.status(200).send({
       url: inviteLink,
     });
   } catch (e) {
