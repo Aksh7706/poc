@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { db } from '../db/db';
+import { Telegram } from '../providers/other/telegram';
 import { Base64 } from '../utils/base64';
 const router = express.Router();
 
@@ -17,17 +18,17 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }: Request, r
 
   const message: string = body?.message?.text ?? '';
 
-  console.log("Message : ", message);
+  console.log('Message : ', message);
   const msgArray = message.split(' ');
   const chatId: number | undefined = body?.message?.chat?.id;
-  console.log("Message Array:", msgArray)
+  console.log('Message Array:', msgArray);
   if (msgArray.length === 2 && msgArray[0] === '/start' && chatId) {
     const encodedWalletAddress = msgArray[1]; // TODO: add method to validate isWalletAddress
     if (!encodedWalletAddress) return res.sendStatus(200);
 
     try {
       const walletAddress = Base64.decode(encodedWalletAddress);
-      console.log("Wallet Address : ", walletAddress)
+      console.log('Wallet Address : ', walletAddress);
       let user = await db.user.get(appId, walletAddress);
       if (!user) {
         user = await db.user.create(appId, {
@@ -42,9 +43,11 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }: Request, r
       } else {
         user = await db.user.updateTelegramChatId(appId, walletAddress, providerName, chatId.toString());
       }
+      const telegramProvider = new Telegram();
+      await telegramProvider.sendWelcomeMessage(provider, chatId.toString(), app.name);
       console.log('User : ', user);
     } catch (e) {
-      console.log("Error telegram : ", e)
+      console.log('Error telegram : ', e);
     }
   }
 

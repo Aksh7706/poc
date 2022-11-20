@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { db } from '../db/db';
 import { appExists, handleError } from '../helper';
 import { omniAuthValidation } from '../middleware/authValidation';
+import { Pigeon } from '../providers/inapp/pegion';
 import { Base64 } from '../utils/base64';
 
 const router = express.Router();
@@ -32,10 +33,18 @@ const upsertUser = async ({ body, ownerAddress }: Request, res: Response) => {
   if (!body.appName || !body.walletAddress) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
     const app = await appExists(body.appName, ownerAddress!);
+    const userCheck = await db.user.get(app.id, ownerAddress!);
+
     const user = await db.user.update(app.id, body.walletAddress, {
       email: body.email,
       mobile: body.mobile,
     });
+
+    if(!userCheck) {
+      const pegionProvider = new Pigeon();
+      await pegionProvider.sendWelcomeMessage(app, body.walletAddress);
+    }
+
     return res.status(200).send(user);
   } catch (err) {
     return handleError(err, res);

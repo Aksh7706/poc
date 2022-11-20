@@ -1,3 +1,4 @@
+import { Provider } from '@prisma/client';
 import axios from 'axios';
 import { ErrorInvalidArg, SendEventArgs, TelegramResponse } from '../../types';
 
@@ -39,6 +40,28 @@ export class Telegram {
       throw e
     });
     //console.log(data);
+  }
+
+  async sendWelcomeMessage(provider: Provider, chatId: string, appName: string) {
+    let token;
+    if (provider.config) {
+      const config = provider.config as Record<string, string>;
+      token = config.telegramBotToken;
+    }
+
+    if (!token) {
+      console.log('Send Event Log : Bot token not found');
+      return;
+    }
+    const message = `Thanks for subscribing at ${appName}.\n We will be sending your on-chain and product notifications here.`
+    const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
+    const params = {
+      chat_id: chatId,
+      text: message
+    };
+    await axios.get(methodEndpoint, { params }).catch(e => {
+      // do nothing
+    });
   }
 
   async setupProvider(appId: string, providerName: string, token?: string) {
