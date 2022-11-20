@@ -29,7 +29,7 @@ export class Telegram {
 
     const params = {
       chat_id: chatId,
-      text: encodeURIComponent(data.message),
+      text: data.message,
       parse_mode: "MarkdownV2"
     };
 
