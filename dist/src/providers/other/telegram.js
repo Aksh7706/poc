@@ -32,7 +32,6 @@ class Telegram {
         const params = {
             chat_id: chatId,
             text: data.message,
-            parse_mode: 'html',
         };
         const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
         await axios_1.default.get(methodEndpoint, { params });
