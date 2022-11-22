@@ -3,6 +3,7 @@ import { db } from '../db/db';
 import { appExists, handleError } from '../helper';
 import { omniAuthValidation } from '../middleware/authValidation';
 import { Pigeon } from '../providers/inapp/pegion';
+import { RedisHelper as redisHelper } from '../reddis';
 import { Base64 } from '../utils/base64';
 
 const router = express.Router();
@@ -55,7 +56,8 @@ const getTelegramInvite = async ({ body }: Request, res: Response) => {
   //https://telegram.me/Staging00Bot?start=aksh=jj__w--xj=hhb==
   if (!body.botUserName || !body.walletAddress) return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
   try {
-    const inviteLink = `https://telegram.me/${body.botUserName}?start=${Base64.encode(body.walletAddress)}`;
+    const otp = await redisHelper.createOTP(body.walletAddress);
+    const inviteLink = `https://telegram.me/${body.botUserName}?start=${otp}`;
     return res.status(200).send({
       url: inviteLink,
     });

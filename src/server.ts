@@ -14,6 +14,7 @@ import { RabbitMqConnection } from './rabbitmq';
 import { Message } from 'amqplib';
 import cookieParser from 'cookie-parser';
 import path from 'path';
+import {  RedisHelper  as redisConnection } from './reddis';
 
 const app = express();
 const port = 3000;
@@ -64,6 +65,8 @@ app.listen(port, async () => {
   console.log(`Near notification platform is running on port ${port}.`);
   const rabbitMqConnection = new RabbitMqConnection();
   await rabbitMqConnection.setUp();
+  await redisConnection.setup();
+
   //let i =0;
   await rabbitMqConnection.channel.consume('nnp-msg-queue', (msg) => {
     if (msg?.content) {

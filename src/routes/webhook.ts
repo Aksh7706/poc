@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import { db } from '../db/db';
 import { Telegram } from '../providers/other/telegram';
-import { Base64 } from '../utils/base64';
+import { RedisHelper as redisHelper } from '../reddis';
 const router = express.Router();
 
 router.post('/webhook/:appId/:providerName', async ({ params, body }: Request, res: Response) => {
@@ -18,17 +18,26 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }: Request, r
 
   const message: string = body?.message?.text ?? '';
 
-  console.log('Message : ', message);
   const msgArray = message.split(' ');
   const chatId: number | undefined = body?.message?.chat?.id;
-  console.log('Message Array:', msgArray);
+
+  const telegramProvider = new Telegram();
+
   if (msgArray.length === 2 && msgArray[0] === '/start' && chatId) {
-    const encodedWalletAddress = msgArray[1]; // TODO: add method to validate isWalletAddress
-    if (!encodedWalletAddress) return res.sendStatus(200);
+
+    const welcomeMessage = `Thanks for subscribing at ${app.name}.\n We will be sending your on-chain and product notifications here.`
+    const failedMessage = `Oops! Login attempt failed. Please try again.`
+
+    const otp = msgArray[1]; // TODO: add method to validate isWalletAddress
+    if (!otp) return res.sendStatus(200);
 
     try {
-      const walletAddress = Base64.decode(encodedWalletAddress);
-      console.log('Wallet Address : ', walletAddress);
+      const walletAddress = await redisHelper.getWalletFromOTP(otp);
+      if(!walletAddress) {
+        await telegramProvider.sendDirectMessage(provider, chatId.toString(), failedMessage);
+        return res.sendStatus(200);
+      }
+     
       let user = await db.user.get(appId, walletAddress);
       if (!user) {
         user = await db.user.create(appId, {
@@ -43,8 +52,8 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }: Request, r
       } else {
         user = await db.user.updateTelegramChatId(appId, walletAddress, providerName, chatId.toString());
       }
-      const telegramProvider = new Telegram();
-      await telegramProvider.sendWelcomeMessage(provider, chatId.toString(), app.name);
+      
+      await telegramProvider.sendDirectMessage(provider, chatId.toString(), welcomeMessage);
       console.log('User : ', user);
     } catch (e) {
       console.log('Error telegram : ', e);
