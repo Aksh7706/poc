@@ -4,22 +4,22 @@ import { camelize } from '../utils/string';
 import { template } from './template';
 
 const octokit = new Octokit({
-  auth: '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',
+  auth: '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',
   baseUrl: 'https://api.github.com',
 });
 
 const generateGitBranch = async (appName: string, receiverId: string, branchName: string, content: string) => {
-  const mainBranch = await octokit.request('GET /repos/gaurav1327/nnp/branches/main');
+  const mainBranch = await octokit.request('GET /repos/nnplabs/parser/branches/main');
   const mainBranchCommmitSHA = mainBranch.data.commit.sha;
 
-  await octokit.request('POST /repos/gaurav1327/nnp/git/refs', {
+  await octokit.request('POST /repos/nnplabs/parser/git/refs', {
     ref: `refs/heads/${branchName}`,
     sha: mainBranchCommmitSHA,
   });
 
   const newTree = await octokit.git.createTree({
-    owner: 'gaurav1327',
-    repo: 'nnp',
+    owner: 'nnplabs',
+    repo: 'parser',
     base_tree: mainBranchCommmitSHA,
     tree: [
       {
@@ -32,14 +32,14 @@ const generateGitBranch = async (appName: string, receiverId: string, branchName
   });
 
   const newCommit = await octokit.git.createCommit({
-    owner: 'gaurav1327',
-    repo: 'nnp',
+    owner: 'nnplabs',
+    repo: 'parser',
     message: `Creating branch for ${receiverId}, app: ${appName}`,
     tree: newTree.data.sha,
     parents: [mainBranchCommmitSHA],
   });
 
-  const pushResponse = await octokit.request(`PATCH /repos/gaurav1327/nnp/git/refs/heads/${branchName}`, {
+  const pushResponse = await octokit.request(`PATCH /repos/nnplabs/parser/git/refs/heads/${branchName}`, {
     sha: newCommit.data.sha,
     force: true,
   });
@@ -56,6 +56,6 @@ export async function generateProject(dirtyAppName: string, receiverId: string) 
 
   if (res.ref) {
     console.log('Branch created successfully');
-    console.log(`https://github.com/Gaurav1327/nnp/tree/${branchName}`);
+    console.log(`https://github.com/nnplabs/parser/tree/${branchName}`);
   }
 }

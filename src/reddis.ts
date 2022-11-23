@@ -22,7 +22,7 @@ export class RedisHelper {
 
   static async createOTP(walletAddress: string): Promise<string> {
     var id = crypto.randomBytes(10).toString('hex');
-    await this.client.setEx(id, 120, walletAddress);
+    await this.client.setEx(id, 180, walletAddress);
     return id;
   }
 

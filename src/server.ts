@@ -15,6 +15,7 @@ import { Message } from 'amqplib';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import {  RedisHelper  as redisConnection } from './reddis';
+import { generateProject } from './generator';
 
 const app = express();
 const port = 3000;
