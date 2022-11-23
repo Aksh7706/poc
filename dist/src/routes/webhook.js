@@ -35,6 +35,7 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }, res) => {
                 await telegramProvider.sendDirectMessage(provider, chatId.toString(), failedMessage);
                 return res.sendStatus(200);
             }
+            await reddis_1.RedisHelper.deleteOTP(otp);
             let user = await db_1.db.user.get(appId, walletAddress);
             if (!user) {
                 user = await db_1.db.user.create(appId, {

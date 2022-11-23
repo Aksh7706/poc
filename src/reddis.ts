@@ -29,4 +29,8 @@ export class RedisHelper {
   static async getWalletFromOTP(otp: string): Promise<string | null> {
     return this.client.get(otp);
   }
+
+  static async deleteOTP(otp: string) {
+    return this.client.del(otp)
+  }
 }
