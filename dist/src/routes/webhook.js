@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const db_1 = require("../db/db");
 const telegram_1 = require("../providers/other/telegram");
-const base64_1 = require("../utils/base64");
+const reddis_1 = require("../reddis");
 const router = express_1.default.Router();
 router.post('/webhook/:appId/:providerName', async ({ params, body }, res) => {
     const appId = params.appId;
@@ -20,17 +20,21 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }, res) => {
     if (provider.providerKey !== 'TELEGRAM')
         return res.sendStatus(200); // TODO: Make hook more generalized
     const message = body?.message?.text ?? '';
-    console.log('Message : ', message);
     const msgArray = message.split(' ');
     const chatId = body?.message?.chat?.id;
-    console.log('Message Array:', msgArray);
+    const telegramProvider = new telegram_1.Telegram();
     if (msgArray.length === 2 && msgArray[0] === '/start' && chatId) {
-        const encodedWalletAddress = msgArray[1]; // TODO: add method to validate isWalletAddress
-        if (!encodedWalletAddress)
+        const welcomeMessage = `Thanks for subscribing at ${app.name}.\n We will be sending your on-chain and product notifications here.`;
+        const failedMessage = `Oops! Login attempt failed. Please try again.`;
+        const otp = msgArray[1]; // TODO: add method to validate isWalletAddress
+        if (!otp)
             return res.sendStatus(200);
         try {
-            const walletAddress = base64_1.Base64.decode(encodedWalletAddress);
-            console.log('Wallet Address : ', walletAddress);
+            const walletAddress = await reddis_1.RedisHelper.getWalletFromOTP(otp);
+            if (!walletAddress) {
+                await telegramProvider.sendDirectMessage(provider, chatId.toString(), failedMessage);
+                return res.sendStatus(200);
+            }
             let user = await db_1.db.user.get(appId, walletAddress);
             if (!user) {
                 user = await db_1.db.user.create(appId, {
@@ -46,8 +50,7 @@ router.post('/webhook/:appId/:providerName', async ({ params, body }, res) => {
             else {
                 user = await db_1.db.user.updateTelegramChatId(appId, walletAddress, providerName, chatId.toString());
             }
-            const telegramProvider = new telegram_1.Telegram();
-            await telegramProvider.sendWelcomeMessage(provider, chatId.toString(), app.name);
+            await telegramProvider.sendDirectMessage(provider, chatId.toString(), welcomeMessage);
             console.log('User : ', user);
         }
         catch (e) {

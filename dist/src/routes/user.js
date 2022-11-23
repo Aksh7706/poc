@@ -8,7 +8,7 @@ const db_1 = require("../db/db");
 const helper_1 = require("../helper");
 const authValidation_1 = require("../middleware/authValidation");
 const pegion_1 = require("../providers/inapp/pegion");
-const base64_1 = require("../utils/base64");
+const reddis_1 = require("../reddis");
 const router = express_1.default.Router();
 const getAllUsers = async ({ body, ownerAddress }, res) => {
     if (!body.appName)
@@ -59,7 +59,8 @@ const getTelegramInvite = async ({ body }, res) => {
     if (!body.botUserName || !body.walletAddress)
         return res.status(400).json({ reason: 'INVALID_PAYLOAD' });
     try {
-        const inviteLink = `https://telegram.me/${body.botUserName}?start=${base64_1.Base64.encode(body.walletAddress)}`;
+        const otp = await reddis_1.RedisHelper.createOTP(body.walletAddress);
+        const inviteLink = `https://telegram.me/${body.botUserName}?start=${otp}`;
         return res.status(200).send({
             url: inviteLink,
         });

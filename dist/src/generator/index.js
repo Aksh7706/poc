@@ -9,19 +9,19 @@ const handlebars_1 = __importDefault(require("handlebars"));
 const string_1 = require("../utils/string");
 const template_1 = require("./template");
 const octokit = new rest_1.Octokit({
-    auth: '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',
+    auth: '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',
     baseUrl: 'https://api.github.com',
 });
 const generateGitBranch = async (appName, receiverId, branchName, content) => {
-    const mainBranch = await octokit.request('GET /repos/gaurav1327/nnp/branches/main');
+    const mainBranch = await octokit.request('GET /repos/nnplabs/parser/branches/main');
     const mainBranchCommmitSHA = mainBranch.data.commit.sha;
-    await octokit.request('POST /repos/gaurav1327/nnp/git/refs', {
+    await octokit.request('POST /repos/nnplabs/parser/git/refs', {
         ref: `refs/heads/${branchName}`,
         sha: mainBranchCommmitSHA,
     });
     const newTree = await octokit.git.createTree({
-        owner: 'gaurav1327',
-        repo: 'nnp',
+        owner: 'nnplabs',
+        repo: 'parser',
         base_tree: mainBranchCommmitSHA,
         tree: [
             {
@@ -33,13 +33,13 @@ const generateGitBranch = async (appName, receiverId, branchName, content) => {
         ],
     });
     const newCommit = await octokit.git.createCommit({
-        owner: 'gaurav1327',
-        repo: 'nnp',
+        owner: 'nnplabs',
+        repo: 'parser',
         message: `Creating branch for ${receiverId}, app: ${appName}`,
         tree: newTree.data.sha,
         parents: [mainBranchCommmitSHA],
     });
-    const pushResponse = await octokit.request(`PATCH /repos/gaurav1327/nnp/git/refs/heads/${branchName}`, {
+    const pushResponse = await octokit.request(`PATCH /repos/nnplabs/parser/git/refs/heads/${branchName}`, {
         sha: newCommit.data.sha,
         force: true,
     });
@@ -53,7 +53,7 @@ async function generateProject(dirtyAppName, receiverId) {
     const res = await generateGitBranch(appName, receiverId, branchName, result);
     if (res.ref) {
         console.log('Branch created successfully');
-        console.log(`https://github.com/Gaurav1327/nnp/tree/${branchName}`);
+        console.log(`https://github.com/nnplabs/parser/tree/${branchName}`);
     }
 }
 exports.generateProject = generateProject;

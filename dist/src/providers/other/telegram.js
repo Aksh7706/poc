@@ -41,7 +41,7 @@ class Telegram {
         });
         //console.log(data);
     }
-    async sendWelcomeMessage(provider, chatId, appName) {
+    async sendDirectMessage(provider, chatId, message) {
         let token;
         if (provider.config) {
             const config = provider.config;
@@ -51,7 +51,6 @@ class Telegram {
             console.log('Send Event Log : Bot token not found');
             return;
         }
-        const message = `Thanks for subscribing at ${appName}.\n We will be sending your on-chain and product notifications here.`;
         const methodEndpoint = `${this.baseURL}/bot${token}/sendMessage`;
         const params = {
             chat_id: chatId,

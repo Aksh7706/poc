@@ -37,6 +37,7 @@ const send_1 = __importStar(require("./routes/send"));
 const rabbitmq_1 = require("./rabbitmq");
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const path_1 = __importDefault(require("path"));
+const reddis_1 = require("./reddis");
 const app = (0, express_1.default)();
 const port = 3000;
 function setUpParsing(app) {
@@ -77,6 +78,7 @@ app.listen(port, async () => {
     console.log(`Near notification platform is running on port ${port}.`);
     const rabbitMqConnection = new rabbitmq_1.RabbitMqConnection();
     await rabbitMqConnection.setUp();
+    await reddis_1.RedisHelper.setup();
     //let i =0;
     await rabbitMqConnection.channel.consume('nnp-msg-queue', (msg) => {
         if (msg?.content) {

@@ -17,8 +17,8 @@ class RabbitMqConnection {
     async setUpConnection() {
         try {
             console.log('Connecting to RabbitMQ...');
-            //this.connection = await amqplib.connect('amqps://fvghnida:hvQ8B8sshWkQcWEInczR3_qRaiv8LMV6@puffin.rmq2.cloudamqp.com/fvghnida');
-            this.connection = await amqplib_1.default.connect('amqps://admin:ZOGmF68JCHN0CF6mYS6HV5cIE6nKOgsJ@59e5tf.stackhero-network.com:5671');
+            this.connection = await amqplib_1.default.connect('amqps://fvghnida:hvQ8B8sshWkQcWEInczR3_qRaiv8LMV6@puffin.rmq2.cloudamqp.com/fvghnida');
+            //this.connection = await amqplib.connect('amqps://admin:ZOGmF68JCHN0CF6mYS6HV5cIE6nKOgsJ@59e5tf.stackhero-network.com:5671');
         }
         catch (err) {
             console.log(`Failed to connect: ${err}`);
