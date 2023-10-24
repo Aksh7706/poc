@@ -54,6 +54,8 @@ Before you can run this project, you need to have the following software install
 
    ```bash
    DATABASE_URL = "your-protgress-url"
+   REDIS_URL = "your-redis-url"
+   RABBITMQ_URL = "your-rabbitmq-url"
 
 5. Run the development server:
    ```bash
