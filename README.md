@@ -31,7 +31,7 @@ Near Notification Protocol is an end-to-end notification architecture designed e
 
 Before you can run this project, you need to have the following software installed:
 
-- [Node.js](https://nodejs.org/) (v14 or higher)
+- [Node.js](https://nodejs.org/) (v16 or higher)
 
 ### Installation
 
